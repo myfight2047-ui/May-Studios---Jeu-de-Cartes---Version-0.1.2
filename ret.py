@@ -233,9 +233,6 @@ class ADMFrame(ctk.CTkFrame):
 
 
 
-import customtkinter as ctk
-from tkinter import messagebox
-import math
 
 class IUInGameFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -445,7 +442,8 @@ class IUInGameFrame(ctk.CTkFrame):
         canvas.create_polygon([coord for point in points_card for coord in point],
                               outline="#ff5555", fill="#ff5555", stipple="gray25", width=2)
         canvas.create_polygon([coord for point in points_avg for coord in point],
-                              outline="#55ff55", fill="#55ff55", stipple="gray25", width=2)
+                      outline="#55ff55", fill="#55ff55", stipple="gray12", width=2)
+
 
         # ---- Lignes et points ----
         for x, y in points_card:
@@ -661,7 +659,8 @@ class CreditsFrame(ctk.CTkFrame):
                            "Code : Myfight\n"
                            "Graphismes : ISTOC Darius\n"
                            "une petite donnation ne lui ferait pas de mal :\n"
-                           "buymeacoffee.com/DARIUSISTOC1\n"),
+                           "buymeacoffee.com/DARIUSISTOC1\n"
+                           "protodev : Brunet Aaron"),
                      font=("Arial", 16)).pack(pady=10)
 
         ctk.CTkButton(self, text="Retour au menu", width=200, height=40,
