@@ -1,39 +1,709 @@
-import random
-import tkinter as tk
-import easyapip
-import math
-
 print("May Studios présente")
-print("Jeu de Cartes V.0.1.2")
+print("Jeu de Cartes - Version 0.1.3)
+
+# ------------------ CONSTANTES DE TALENTS ET STATISTIQUES ------------------
+BOUCLIER_BRUT = "Bouclier Brut"
+EPEE_BRUTE = "Epée Brute"
+DIVISION = "Division"
+PIQUE_COEUR = "Pique-coeur"
+IODE = "Iode"
+BONUS_ROYAL = "Bonus Royal"
+RESTER = "Rester"
+PARA_CHUTE = "Para-Chute"
+STATISTIQUE_ATTAQUE = "attaque"
+STATISTIQUE_VIE = "vie"
+
+# ------------------ IMPORTS ------------------
+import tkinter as tk
+import customtkinter as ctk
+from tkinter import messagebox
+import random
+import math
+from PIL import Image
+
+# ------------------ DONNÉES DU JEU ------------------
+personnages = {
+    "perso1": {"nom": "Chevalier Rouge", "pv": 100, "attaque": 25, "defense": 15, "vitesse": 10},
+    "perso2": {"nom": "Mage Bleu", "pv": 70, "attaque": 40, "defense": 10, "vitesse": 20},
+    "perso3": {"nom": "Archer Vert", "pv": 85, "attaque": 30, "defense": 12, "vitesse": 25},
+}
+
+
+# ------------------ CONFIGURATION DE L'APPLICATION ------------------
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
+
+
+# ------------------ CLASSE PRINCIPALE ------------------
+class JeuDeCartes(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+
+        # Fenêtre principale
+        self.title("Jeu de cartes par May Studio")
+        self.geometry("800x600")
+        self.minsize(600, 400)
+
+        self.sauvegardeencours = ""
+
+        # Barre de menu en haut
+        self.creer_menu_ctk()
+
+        # Frames principales
+        self.frames = {}
+        for F in (MenuFrame, JouerFrame, ADMFrame, FuturParametresFrame, IUADMFrame , IUInGameFrame, EditorSkinFrame , MatchMaking, SkinFrame, CombatVsAutreFrame, CombatVsBotFrame, ParametresFrame, CreditsFrame):
+            frame = F(self)
+            self.frames[F] = frame
+            frame.place(relwidth=1, relheight=1, rely=0.08)  # Décalage à cause de la barre du haut
+
+        self.show_frame(MenuFrame)
+
+    # ------------------ BARRE DE MENU CUSTOM ------------------
+    def creer_menu_ctk(self):
+        menu_bar = ctk.CTkFrame(self, fg_color="#222", height=50)
+        menu_bar.place(relx=0, rely=0, relwidth=1)
+
+        # Boutons du menu
+        ctk.CTkButton(menu_bar, text="💾 Enregistrer", width=120, height=30,
+                    command=self.save).place(relx=0.02, rely=0.15)
+        ctk.CTkButton(menu_bar, text="🆕 Nouvelle partie", width=150, height=30,
+                    command=self.newgame).place(relx=0.20, rely=0.15)
+        ctk.CTkButton(menu_bar, text="📂 Charger", width=120, height=30,
+                    command=self.load).place(relx=0.43, rely=0.15)
+        ctk.CTkButton(menu_bar, text="❌ Quitter", width=100, height=30,
+                    fg_color="red", hover_color="#aa0000",
+                    command=self.quit).place(relx=0.86, rely=0.15)
+
+    # ------------------ MÉTHODES DE GESTION DE SAUVEGARDE ------------------
+    def save(self):
+        with open("sauvegarde_jeu_de_carte_MayStudio.txt", "w") as fichier:
+            fichier.write(self.sauvegardeencours)
+        print("💾 Partie enregistrée.")
+
+    def newgame(self):
+        self.sauvegardeencours = ""
+        with open("sauvegarde_jeu_de_carte_MayStudio.txt", "w") as fichier:
+            fichier.write("")
+        print("🎮 Nouvelle partie lancée.")
+
+    def load(self):
+        try:
+            with open("sauvegarde_jeu_de_carte_MayStudio.txt", "r") as fichier:
+                self.sauvegardeencours = fichier.read()
+            print("📂 Partie chargée.")
+        except FileNotFoundError:
+            print("⚠️ Aucune sauvegarde trouvée.")
+
+    def show_frame(self, cont):
+        frame = self.frames[cont]
+        frame.tkraise()
+
+
+# ------------------ PAGE : MENU PRINCIPAL ------------------
+class MenuFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="red")
+
+        container = ctk.CTkFrame(self, fg_color="transparent")
+        container.place(relx=0.5, rely=0.5, anchor="center")
+
+        ctk.CTkLabel(container, text="Jeu de cartes par May Studio",
+                    font=("Arial", 32, "bold"), text_color="white").pack(pady=(0, 40))
+
+        ctk.CTkButton(container, text="Jouer",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    command=lambda: master.show_frame(JouerFrame)).pack(pady=10)
+        
+        ctk.CTkButton(container, text="Skin",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    command=lambda: master.show_frame(SkinFrame)).pack(pady=10)
+
+        ctk.CTkButton(container, text="Paramètres",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    command=lambda: master.show_frame(ParametresFrame)).pack(pady=10)
+
+        ctk.CTkButton(container, text="Crédits",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    command=lambda: master.show_frame(CreditsFrame)).pack(pady=10)
+        
+        
+        ctk.CTkButton(container, text="ADM",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    command=lambda: master.show_frame(ADMFrame)).pack(pady=10)
+
+        # ✅ Nouveau bouton : Fermer le jeu
+        ctk.CTkButton(container, text="Fermer le jeu",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    fg_color="darkred", hover_color="#aa0000",
+                    command=master.quit).pack(pady=20)
+        
+
+# ------------------ PAGE : SKIN ------------------
+
+class SkinFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="darkred")
+
+        # ------------------ LISTE DES SKINS ------------------
+        self.skins = [
+            {"nom": "Skin 1", "image": "images/S1.jpg"},
+            {"nom": "Skin 2", "image": "images/S2.jpg"},
+        ]
+        self.index_skin = 0
+
+        # ------------------ TITRE ------------------
+        ctk.CTkLabel(self, text="Mode : Skin",
+                    font=("Arial", 28, "bold")).pack(pady=40)
+
+        # ------------------ IMAGE DU SKIN ------------------
+        image = Image.open(self.skins[self.index_skin]["image"])
+        image = image.resize((200, 200))  # Ajuste la taille si besoin
+        self.ctk_image = ctk.CTkImage(image, size=(200, 200))
+
+        self.image_label = ctk.CTkLabel(self, image=self.ctk_image, text="")
+        self.image_label.pack(pady=10)
+
+        # ------------------ NOM DU SKIN ------------------
+        self.label_skin = ctk.CTkLabel(
+            self,
+            text=f"Skin actuel : {self.skins[self.index_skin]['nom']}",
+            font=("Arial", 20)
+        )
+        self.label_skin.pack(pady=10)
+
+        # ------------------ BOUTONS ------------------
+        ctk.CTkButton(
+            self,
+            text="Skin suivant",
+            width=200,
+            height=40,
+            command=self.suivant_skin
+        ).pack(pady=10)
+
+        ctk.CTkButton(
+            self,
+            text="Retour au menu",
+            width=200,
+            height=40,
+            command=lambda: master.show_frame(MenuFrame)
+        ).pack(pady=20)
+
+    # ------------------ CHANGEMENT DE SKIN ------------------
+    def suivant_skin(self):
+        """Passe au skin suivant et met à jour le visuel."""
+        self.index_skin = (self.index_skin + 1) % len(self.skins)
+
+        # Met à jour le texte
+        self.label_skin.configure(
+            text=f"Skin actuel : {self.skins[self.index_skin]['nom']}"
+        )
+
+        # Met à jour l’image
+        image = Image.open(self.skins[self.index_skin]["image"])
+        image = image.resize((200, 200))
+        self.ctk_image = ctk.CTkImage(image, size=(200, 200))
+        self.image_label.configure(image=self.ctk_image)
+
+
+#--------------------ADM---------------------------
+class ADMFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="darkred")
+
+        container = ctk.CTkFrame(self, fg_color="transparent")
+        container.place(relx=0.5, rely=0.5, anchor="center")
+
+        ctk.CTkLabel(container, text="ADM",
+                    font=("Arial", 32, "bold"), text_color="white").pack(pady=(0, 40))
+
+        ctk.CTkButton(container, text="IU Jouer",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    command=lambda: master.show_frame(IUInGameFrame)).pack(pady=10)
+        
+        ctk.CTkButton(container, text="Editer Skin",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    command=lambda: master.show_frame(EditorSkinFrame)).pack(pady=10)
+
+        ctk.CTkButton(container, text="Paramètres",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    command=lambda: master.show_frame(FuturParametresFrame)).pack(pady=10)
+
+        ctk.CTkButton(container, text="Profil",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    command=lambda: master.show_frame(ProfilFrame)).pack(pady=10)
+        
+        
+        ctk.CTkButton(container, text="IUADM",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    command=lambda: master.show_frame(IUADMFrame)).pack(pady=10)
+
+        # ✅ Nouveau bouton : Fermer le jeu
+        ctk.CTkButton(container, text="Fermer le jeu",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    fg_color="darkred", hover_color="#aa0000",
+                    command=master.quit).pack(pady=20)
+
+class IUInGameFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="darkred")
+
+        # ===================== TITRE ET PROGRESS BAR =====================
+        top_bar = ctk.CTkFrame(self, fg_color="transparent")
+        top_bar.pack(fill="x", pady=(5, 0))
+        ctk.CTkLabel(top_bar, text="Manche 1", font=("Arial", 20, "bold")).pack(pady=(5, 3))
+        self.progress_bar = ctk.CTkProgressBar(top_bar, width=300)
+        self.progress_bar.pack()
+        self.progress_bar.set(0.5)
+
+        # ===================== ZONE DE JEU =====================
+        table_frame = ctk.CTkFrame(self, fg_color="#5a0f0f", corner_radius=20)
+        table_frame.pack(expand=True, fill="both", padx=20, pady=10)
+        ctk.CTkLabel(table_frame, text="Zone de jeu", font=("Arial", 18, "bold")).place(relx=0.5, rely=0.05, anchor="center")
+
+        # ---- CARTES POSÉES (VERTICALES) ----
+        self.cards_zone = ctk.CTkFrame(table_frame, fg_color="transparent")
+        self.cards_zone.place(relx=0.5, rely=0.5, anchor="center")
+
+        adv_card_border = ctk.CTkFrame(self.cards_zone, width=130, height=180, fg_color="transparent",
+                                    border_color="white", border_width=3, corner_radius=10)
+        adv_card_border.pack(pady=70)
+        ctk.CTkLabel(adv_card_border, text="Carte adverse", text_color="white").place(relx=0.5, rely=0.5, anchor="center")
+
+        player_card_border = ctk.CTkFrame(self.cards_zone, width=130, height=180, fg_color="transparent",
+                                        border_color="white", border_width=3, corner_radius=10)
+        player_card_border.pack(pady=70)
+        ctk.CTkLabel(player_card_border, text="Votre carte", text_color="white").place(relx=0.5, rely=0.5, anchor="center")
+
+        # ===================== INFO ADVERSAIRE =====================
+        adv_info = ctk.CTkFrame(table_frame, width=180, height=80, fg_color="#3b0a0a", corner_radius=10)
+        adv_info.place(relx=0.97, rely=0.08, anchor="ne")
+        adv_info.pack_propagate(False)
+        ctk.CTkLabel(adv_info, text="Cartes adversaire", font=("Arial", 14, "bold")).pack(pady=3)
+        self.nb_cartes_adv = ctk.CTkLabel(adv_info, text="Nombre : 5", font=("Arial", 16))
+        self.nb_cartes_adv.pack()
+
+        # ===================== CHAT FLOTTANT =====================
+        self.chat_frame = ctk.CTkFrame(self, width=220, height=170, fg_color="#3b0a0a", corner_radius=10)
+        self.chat_frame.place(x=40, y=100)
+        self.chat_frame.pack_propagate(False)
+        ctk.CTkLabel(self.chat_frame, text="💬 Chat", font=("Arial", 14, "bold")).pack(anchor="w", padx=5, pady=3)
+        self.chat_box = ctk.CTkTextbox(self.chat_frame, width=200, height=80)
+        self.chat_box.pack(padx=5, pady=5)
+        self.chat_entry = ctk.CTkEntry(self.chat_frame, placeholder_text="Écrire un message...")
+        self.chat_entry.pack(fill="x", padx=5, pady=(0, 5))
+        self.chat_entry.bind("<Return>", self.send_message)
+        self.chat_frame.bind("<Button-1>", self.start_move_chat)
+        self.chat_frame.bind("<B1-Motion>", self.do_move_chat)
+
+        # ===================== PANEL D’INFOS À DROITE =====================
+        self.info_frame = ctk.CTkFrame(self, width=260, fg_color="#3b0a0a", corner_radius=15)
+        self.info_frame.place(relx=0.975, rely=0.5, anchor="e", relheight=0.55)
+        self.info_frame.pack_propagate(False)
+
+        ctk.CTkLabel(self.info_frame, text="📜 Carte sélectionnée", font=("Arial", 16, "bold")).pack(pady=(10, 5))
+        self.card_name_label = ctk.CTkLabel(self.info_frame, text="Aucune carte", font=("Arial", 15))
+        self.card_name_label.pack(pady=5)
+        self.card_stats_label = ctk.CTkLabel(
+            self.info_frame,
+            text="Attaque : -\nDéfense : -\nMagie : -\nVitesse : -",
+            font=("Arial", 13),
+            justify="left"
+        )
+        self.card_stats_label.pack(pady=5)
+
+        # ---- GRAPHIQUE RADAR COMPARATIF ----
+        self.graph_frame = ctk.CTkFrame(self.info_frame, fg_color="#4d0f0f", corner_radius=10)
+        self.graph_frame.pack(fill="both", expand=True, padx=10, pady=5)
+
+        # ---- BOUTON JOUER ----
+        self.play_button = ctk.CTkButton(
+            self.info_frame,
+            text="🎯 Jouer cette carte",
+            width=200,
+            height=40,
+            state="disabled",
+            command=self.play_selected_card
+        )
+        self.play_button.pack(side="bottom", pady=10)
+
+        # ===================== BAS : VOS CARTES =====================
+        bottom_frame = ctk.CTkFrame(self, fg_color="transparent")
+        bottom_frame.pack(side="bottom", fill="x", pady=(0, 40))
+        player_cards_frame = ctk.CTkFrame(bottom_frame, fg_color="#3b0a0a", corner_radius=10)
+        player_cards_frame.pack(side="left", padx=10)
+        ctk.CTkLabel(player_cards_frame, text="Vos cartes :", font=("Arial", 14, "bold")).pack(pady=5)
+
+        # --- Cartes cliquables ---
+        self.cartes_joueur = []
+        for i in range(5):
+            stats = {
+                "nom": f"Carte {i+1}",
+                "Attaque": 10 + i * 3,
+                "Défense": 5 + i * 2,
+                "Magie": 7 + i * 1,
+                "Vitesse": 8 + i * 2
+            }
+            carte = ctk.CTkButton(
+                player_cards_frame,
+                text=stats["nom"],
+                width=80,
+                height=100,
+                command=lambda s=stats: self.select_card(s)
+            )
+            carte.pack(side="left", padx=5, pady=5)
+            self.cartes_joueur.append(carte)
+
+        menu_button = ctk.CTkButton(bottom_frame, text="Retour au menu", width=200, height=40,
+                                    command=lambda: master.show_frame(master.frames[master.frames.keys().__iter__().__next__()]))
+        menu_button.pack(side="right", padx=20)
+
+    # ===================== CHAT =====================
+    def send_message(self, event=None):
+        msg = self.chat_entry.get().strip()
+        if msg:
+            self.chat_box.insert("end", f"Vous: {msg}\n")
+            self.chat_box.see("end")
+            self.chat_entry.delete(0, "end")
+        else:
+            messagebox.showwarning("Chat", "Message vide interdit !")
+
+    def start_move_chat(self, event):
+        self.chat_offset_x = event.x
+        self.chat_offset_y = event.y
+
+    def do_move_chat(self, event):
+        x = self.chat_frame.winfo_x() + event.x - self.chat_offset_x
+        y = self.chat_frame.winfo_y() + event.y - self.chat_offset_y
+        self.chat_frame.place(x=x, y=y)
+
+    # ===================== CARTE SÉLECTIONNÉE =====================
+    def select_card(self, stats):
+        self.card_name_label.configure(text=stats["nom"])
+        self.card_stats_label.configure(
+            text="\n".join([f"{k} : {v}" for k, v in stats.items() if k != "nom"])
+        )
+        self.play_button.configure(state="normal")
+        self.selected_card = stats
+        self.update_chart(stats)
+
+    def play_selected_card(self):
+        if hasattr(self, "selected_card"):
+            messagebox.showinfo("Carte jouée", f"Vous avez joué {self.selected_card['nom']} !")
+            self.play_button.configure(state="disabled")
+            self.card_name_label.configure(text="Aucune carte")
+            self.card_stats_label.configure(text="Attaque : -\nDéfense : -\nMagie : -\nVitesse : -")
+            self.update_chart(None)
+
+    # ===================== GRAPHIQUE RADAR =====================
+    def update_chart(self, stats):
+        for widget in self.graph_frame.winfo_children():
+            widget.destroy()
+
+        canvas_size = 220
+        canvas = ctk.CTkCanvas(self.graph_frame, width=canvas_size, height=canvas_size,
+                            bg="#4d0f0f", highlightthickness=0)
+        canvas.pack(fill="both", expand=True, padx=5, pady=5)
+
+        if not stats:
+            canvas.create_text(canvas_size / 2, canvas_size / 2, text="Aucune carte",
+                            fill="white", font=("Arial", 12))
+            return
+
+        categories = ["Attaque", "Défense", "Magie", "Vitesse"]
+        n = len(categories)
+        center = canvas_size / 2
+        radius = canvas_size / 2 - 30
+        values = [stats[c] for c in categories]
+        max_value = max(values + [10])
+        avg_values = [sum(values) / n for _ in range(n)]
+
+        # ---- Fond radar ----
+        steps = 4
+        for s in range(1, steps + 1):
+            r = radius * s / steps
+            points = []
+            for i in range(n):
+                angle = (i / n) * 2 * math.pi - math.pi / 2
+                x = center + r * math.cos(angle)
+                y = center + r * math.sin(angle)
+                points.append((x, y))
+            for i in range(n):
+                x1, y1 = points[i]
+                x2, y2 = points[(i + 1) % n]
+                canvas.create_line(x1, y1, x2, y2, fill="#555555")
+            canvas.create_text(center, max(5, center - r), text=str(int(max_value * s / steps)),
+                            fill="#aaaaaa", font=("Arial", 8))
+
+        # ---- Carte et moyenne ----
+        points_card = []
+        points_avg = []
+        for i, val in enumerate(values):
+            angle = (i / n) * 2 * math.pi - math.pi / 2
+            r = (val / max_value) * radius
+            x = center + r * math.cos(angle)
+            y = center + r * math.sin(angle)
+            points_card.append((x, y))
+            r_avg = (avg_values[i] / max_value) * radius
+            x_avg = center + r_avg * math.cos(angle)
+            y_avg = center + r_avg * math.sin(angle)
+            points_avg.append((x_avg, y_avg))
+
+        canvas.create_polygon([coord for point in points_card for coord in point],
+                            outline="#ff5555", fill="#ff5555", stipple="gray25", width=2)
+        canvas.create_polygon([coord for point in points_avg for coord in point],
+                            outline="#55ff55", fill="#55ff55", stipple="gray25", width=2)
+
+        # ---- Lignes et points ----
+        for x, y in points_card:
+            canvas.create_line(center, center, x, y, fill="#ff5555", width=1)
+        for x, y in points_avg:
+            canvas.create_line(center, center, x, y, fill="#55ff55", width=1)
+        for i, (x, y) in enumerate(points_card):
+            canvas.create_oval(x - 4, y - 4, x + 4, y + 4, fill="#ff5555")
+            canvas.create_text(x, max(5, y - 14), text=str(values[i]), fill="#ff5555", font=("Arial", 9, "bold"))
+        for i, (x, y) in enumerate(points_avg):
+            canvas.create_oval(x - 4, y - 4, x + 4, y + 4, fill="#55ff55")
+            canvas.create_text(x, min(canvas_size - 5, y + 14), text=str(round(avg_values[i], 1)), fill="#55ff55", font=("Arial", 9))
+
+        canvas.create_text(canvas_size - 50, 15, text="Carte", fill="#ff5555", font=("Arial", 10))
+        canvas.create_text(canvas_size - 50, 30, text="Moyenne", fill="#55ff55", font=("Arial", 10))
+
+#------------------ PAGE : EditorSkin ------------------
+class EditorSkinFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="darkred")
+        ctk.CTkLabel(self, text="Mode : Editeur de skin",
+                    font=("Arial", 28, "bold")).pack(pady=40)
+
+        ctk.CTkButton(self, text="Retour au menu", width=200, height=40,
+                    command=lambda: master.show_frame(MenuFrame)).pack(pady=20)
+        
+
+#------------------ PAGE : FuturParametres ------------------
+class FuturParametresFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="darkred")
+        ctk.CTkLabel(self, text="Mode : Futur Paramètres",
+                    font=("Arial", 28, "bold")).pack(pady=40)
+        
+        ctk.CTkLabel(self, text="Mode : ensibilité de la souris",
+                    font=("Arial", 28, "bold")).pack(pady=40)
+        
+        ctk.CTkLabel(self, text="Mode : Taille de l'ecran",
+                    font=("Arial", 28, "bold")).pack(pady=40)
+        
+        ctk.CTkLabel(self, text="Mode : Choix de la langue",
+                    font=("Arial", 28, "bold")).pack(pady=40)
+        
+        ctk.CTkLabel(self, text="Mode : Thème du jeu",
+                    font=("Arial", 28, "bold")).pack(pady=40)
+        
+        ctk.CTkLabel(self, text="Mode : Atribution des touches",
+                    font=("Arial", 28, "bold")).pack(pady=40)
+
+        ctk.CTkButton(self, text="Retour au menu", width=200, height=40,
+                    command=lambda: master.show_frame(MenuFrame)).pack(pady=20)
+
+
+#------------------ PAGE : Profil ------------------
+class ProfilFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="darkred")
+        ctk.CTkLabel(self, text="Mode : Nom du Joueur",
+                    font=("Arial", 28, "bold")).pack(pady=40)
+        
+        ctk.CTkLabel(self, text="Badges" + "🏅" * 5,
+                    font=("Arial", 28, "bold")).pack(pady=40)
+        
+        ctk.CTkLabel(self, text="Niveau : " + str(random.randint(1, 100)),
+                    font=("Arial", 28, "bold")).pack(pady=40)
+        
+        ctk.CTkLabel(self, text="Description perso"+str(random.randint(1, 10000000)),
+                    font=("Arial", 28, "bold")).pack(pady=40)
+
+        ctk.CTkButton(self, text="Retour au menu", width=200, height=40,
+                    command=lambda: master.show_frame(MenuFrame)).pack(pady=20)
+
+
+# ---------------PAGE : IUADM -----------------
+class IUADMFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="darkred")
+
+        ctk.CTkButton(self, text="Retour au menu", width=200, height=40,
+                    command=lambda: master.show_frame(MenuFrame)).pack(pady=20)
 
 
 
 
+# ---------------- PAGE : MATCHMAKING ---------------
+class MatchMaking(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="darkred")
+        ctk.CTkLabel(self, text="Mode : Matchmaking",
+                    font=("Arial", 28, "bold")).pack(pady=40)
 
-    #---------------------------FIN DARIUS
+        ctk.CTkButton(self, text="Retour au menu", width=200, height=40,
+                    command=lambda: master.show_frame(MenuFrame)).pack(pady=20)
+
+        # --- Canvas pour l'animation ---
+        self.canvas_size = 150
+        self.canvas = ctk.CTkCanvas(self, width=self.canvas_size, height=self.canvas_size, bg="darkred", highlightthickness=0)
+        self.canvas.pack(pady=30)
+
+        self.angle = 0  # angle initial
+        self.line_length = 60
+        self.center = self.canvas_size // 2
+
+        # Dessiner le cercle de rotation
+        self.line = self.canvas.create_line(self.center, self.center,
+                                            self.center + self.line_length, self.center,
+                                            width=4, fill="white", capstyle="round")
+        self.animate_circle()
+
+    def animate_circle(self):
+        # Calculer nouvelle position du bout du trait
+        rad = math.radians(self.angle)
+        x = self.center + self.line_length * math.cos(rad)
+        y = self.center + self.line_length * math.sin(rad)
+
+        # Mettre à jour la ligne
+        self.canvas.coords(self.line, self.center, self.center, x, y)
+
+        # Avancer l'angle
+        self.angle = (self.angle + 5) % 360
+
+        # Refaire l'animation toutes les 50ms
+        self.after(50, self.animate_circle)
+
+
+# ------------------ PAGE : JOUER ------------------
+class JouerFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="darkred")
+
+        container = ctk.CTkFrame(self, fg_color="transparent")
+        container.place(relx=0.5, rely=0.5, anchor="center")
+
+        ctk.CTkLabel(container, text="Mode de jeu", font=("Arial", 28, "bold")).pack(pady=40)
+
+        ctk.CTkButton(container, text="Combat vs autre (phase de test)",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    command=lambda: master.show_frame(MatchMaking)).pack(pady=10)
+
+        ctk.CTkButton(container, text="Combat vs bot (phase de test)",
+                    width=300, height=50, font=("Arial", 18, "bold"),
+                    command=lambda: master.show_frame(CombatVsBotFrame)).pack(pady=10)
+
+        ctk.CTkButton(container, text="Retour au menu", width=200, height=40,
+                        command=lambda: master.show_frame(MenuFrame)).pack(pady=40)
+            
+
+
+
+# ------------------ PAGE : COMBAT CONTRE UN AUTRE JOUEUR ------------------
+class CombatVsAutreFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="darkred")
+        ctk.CTkLabel(self, text="Mode : Combat contre un autre joueur",
+                    font=("Arial", 28, "bold")).pack(pady=40)
+
+        ctk.CTkButton(self, text="Retour au menu", width=200, height=40,
+                    command=lambda: master.show_frame(MenuFrame)).pack(pady=20)
+
+
+# ------------------ PAGE : COMBAT CONTRE BOT ------------------
+class CombatVsBotFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="darkred")
+        ctk.CTkLabel(self, text="Mode : Combat contre le bot",
+                    font=("Arial", 28, "bold")).pack(pady=40)
+
+        perso = personnages["perso2"]
+        ctk.CTkLabel(self, text=f"{perso['nom']} — PV: {perso['pv']} | ATQ: {perso['attaque']} | DEF: {perso['defense']} | VIT: {perso['vitesse']}",
+                    font=("Arial", 16)).pack(pady=10)
+
+        ctk.CTkButton(self, text="Retour au menu", width=200, height=40,
+                    command=lambda: master.show_frame(MenuFrame)).pack(pady=40)
+
+
+# ------------------ PAGE : PARAMÈTRES ------------------
+class ParametresFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="darkred")
+
+        ctk.CTkLabel(self, text="Paramètres", font=("Arial", 28, "bold")).pack(pady=40)
+
+        ctk.CTkLabel(self, text="Volume du jeu :", font=("Arial", 16)).pack(pady=10)
+        ctk.CTkSlider(self, from_=0, to=100).pack(pady=10)
+
+        ctk.CTkLabel(self, text="Nom du joueur :", font=("Arial", 16)).pack(pady=10)
+        ctk.CTkEntry(self, placeholder_text="Entrez votre pseudo").pack(pady=10)
+
+        ctk.CTkButton(self, text="Retour au menu", width=200, height=40,
+                    command=lambda: master.show_frame(MenuFrame)).pack(pady=40)
+
+
+# ------------------ PAGE : CRÉDITS ------------------
+class CreditsFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master, fg_color="black")
+
+        ctk.CTkLabel(self, text="Crédits", font=("Arial", 28, "bold")).pack(pady=30)
+
+        ctk.CTkLabel(self,
+                    text=("Développé par May Studio (2025)\n"
+                        "Merci d'avoir joué !\n\n"
+                        "Version 0.1 (phase de test)\n\n"
+                        "Code : Myfight\n"
+                        "Graphismes : ISTOC Darius\n"
+                        "une petite donnation ne lui ferait pas de mal :\n"
+                        "buymeacoffee.com/DARIUSISTOC1\n"),
+                    font=("Arial", 16)).pack(pady=10)
+
+        ctk.CTkButton(self, text="Retour au menu", width=200, height=40,
+                    command=lambda: master.show_frame(MenuFrame)).pack(pady=40)
+
+
+# ------------------ LANCEMENT DU PROGRAMME ------------------
+if __name__ == "__main__":
+    app = JeuDeCartes()
+    app.mainloop()
+
+# ------------------ FIN DARIUS
 
 class Cartes:
-    def Cartes(self, carte, nom, rarete, type_carte, attaque_de_base, vitesse_de_base, defense_de_base, vie_de_base, puissance_de_base, cout, talent, talent_facultatif = None, artefact = None, capacite = None, specialite = None, attaque = None, attaque_deux = None, attaque_trois = None, attaque_quatre = None, attaque_cinq = None, vitesse = None, vitesse_deux = None, vitesse_trois = None, vitesse_quatre = None, vitesse_cinq = None, defense = None, defense_deux = None, defense_trois = None, defense_quatre = None, defense_cinq = None, vie = None, vie_deux = None, vie_trois = None, vie_quatre = None, vie_cinq = None, puissance = None, puissance_deux = None, puissance_trois = None, puissance_quatre = None, puissance_cinq = None):
+    def __init__(self, carte, nom, rarete, type_carte, attaque, vitesse, defense, vie, puissance, cout, talent, de_base=None, deux=None, trois=None, quatre=None, cinq=None, eau = None, feu = None, foudre = None, technologie = None, royaute = None, sorts_et_soins = None, mystere = None, chaos = None, apothicaire = None, terres_de_l_au_dela = None, monde_magique = None, talent_facultatif=None, artefact=None, capacite=None, specialite=None, statistique=None, statistique_en_cours=None, statistique_en_vigueur=None, roulement=None, statistique_privilegiee=None, statistique_par_type=None, compteur_de_tours = None, tour_actuel = None, carte_possedee = None, carte_adverse = None, valeur_tiree = None):
         self.carte = carte
-        self.adverse = adverse
-        self.possedee = possedee
-        
         self.nom = nom
         self.rarete = rarete
         self.type_carte = type_carte
         self.specialite = specialite
-        
+
+        self.eau = eau
+        self.feu = feu
+        self.foudre = foudre
+        self.technologie = technologie
+        self.royaute = royaute
+        self.sorts_et_soins = sorts_et_soins
+        self.mystere = mystere
+
+        self.chaos = chaos
+        self.terres_de_l_au_dela = terres_de_l_au_dela
+        self.apothicaire = apothicaire
+        self.monde_magique = monde_magique
+
         self.attaque = attaque
         self.vitesse = vitesse
         self.defense = defense
         self.vie = vie
         self.puissance = puissance
+        self.de_base = de_base
 
-        self.de_base = vitesse_de_base
-        self.deux = vitesse_deux
-        self.trois = vitesse_trois
-        self.quatre = vitesse_quatre
-        self.cinq = vitesse_cinq
+        self.deux = deux
+        self.trois = trois
+        self.quatre = quatre
+        self.cinq = cinq
 
         self.cout = cout
         self.talent = talent
@@ -46,11 +716,39 @@ class Cartes:
         self.statistique_en_vigueur = statistique_en_vigueur
         self.statistique_privilegiee = statistique_privilegiee
         self.statistique_par_type = statistique_par_type
+        self.valeur_tiree = valeur_tiree
+
         self.roulement = roulement
-        self.seconde = seconde
-        seconde = vie*125
+        self.seconde = vie * 125
+
+        self.compteur_de_tours = compteur_de_tours
+        self.tour_actuel = tour_actuel
+        self.carte_possedee = carte_possedee
+        self.carte_adverse = carte_adverse
+
+    def bibliotheque_de_types(self):
+        types = {
+            self.eau : "Eau",
+            self.feu : "Feu",
+            self.foudre : "Foudre",
+            self.technologie : "Technologie",
+            self.royaute : "Royauté",
+            self.sorts_et_soins : "Sorts et soins",
+            self.mystere : "Mystère"
+        }
+    
+    def bibliotheque_de_rarete(self):
+        rarete = {
+            self.commune : "Commune",
+            self.rare : "Rare",
+            self.epique : "Epique",
+            self.mythique : "Mythique",
+            self.legendaire : "Légendaire",
+            self.champion : "Champion"
+        }
         
-    class bibliotheque_de_cartes:  
+       
+    class bibliotheque_de_carte:  
         class Tireur_Aquatique:   
             def Tireur_Aquatique(self):  
                 self.nom = "Tireur Aquatique"
@@ -149,461 +847,455 @@ class Cartes:
                 self.cout = 6
                 self.talent = "Bonus Royal"
                 
-        class Aura_Sphere:   
-            def Aura_Sphere(self):  
+        class Aura_Sphere:
+            def __init__(self):
                 self.nom = "Aura-Sphère"
                 self.numero = "8"
                 self.rarete = "Mythique"
                 self.type_carte = "Foudre"
-                self.attaque.de_base = 100
-                self.vitesse.de_base = 1.25
-                self.defense.de_base = 0
-                self.vie.de_base = self.seconde.Aura_Sphere
-                self.seconde.Aura_Sphere = 10
-                self.puissance.de_base = 5
+                self.attaque = 100
+                self.vitesse = 1.25
+                self.defense = 0
+                self.vie = 10
+                self.puissance = 5
                 self.cout = 5
                 self.talent = "Rester"
                 
-        class Guerrier_Aerien:   
-            def Guerrier_Aerien(self):  
+        class Guerrier_Aerien:
+            def __init__(self):
                 self.nom = "Guerrier Aérien"
                 self.numero = "9"
                 self.rarete = "Epique"
                 self.type_carte = "Royauté"
-                self.attaque.de_base = 225
-                self.vitesse.de_base = 1
-                self.defense.de_base = 6
-                self.vie.de_base = 1500
-                self.puissance.de_base = 6
+                self.attaque = 225
+                self.vitesse = 1
+                self.defense = 6
+                self.vie = 1500
+                self.puissance = 6
                 self.cout = 4
-                self.talent = "Para-Chute" # Augmente la vie de 50%, seulement au premier tour
+                self.talent = "Para-Chute"
                 
-        class Roue_Gobeline:   
-            def Roue_Gobeline(self):  
+        class Roue_Gobeline:
+            def __init__(self):
                 self.nom = "Roue Gobeline"
                 self.numero = "10"
                 self.rarete = "Rare"
                 self.type_carte = "Technologie"
-                self.attaque.de_base = 125
-                self.attaque.deux = 75
-                self.vitesse.de_base = 1
-                self.vitesse.deux = 3
-                self.defense.de_base = 10
-                self.defense.deux = 4
-                self.vie.de_base = 0
-                self.vie.deux = 250
-                self.puissance.de_base = 3
+                self.attaque = 125
+                self.attaque_deux = 75
+                self.vitesse = 1
+                self.vitesse_deux = 3
+                self.defense = 10
+                self.defense_deux = 4
+                self.vie = 0
+                self.vie_deux = 250
+                self.puissance = 3
                 self.cout = 4
                 self.talent = "Bonus Royal"
                 
-        class Chat_de_Compagnie:   
-            def Chat_de_Compagnie(self):  
+        class Chat_de_Compagnie:
+            def __init__(self):
                 self.nom = "Chat de Compagnie"
                 self.numero = "11"
                 self.rarete = "Epique"
                 self.type_carte = "Mystère"
-                self.attaque.de_base = 300
-                self.attaque.deux = 150
-                self.vitesse.de_base = 1
-                self.vitesse.deux = 1.5
-                self.defense.de_base = 6
-                self.vie.de_base = 1500
-                self.puissance.de_base = 5
+                self.attaque = 300
+                self.attaque_deux = 150
+                self.vitesse = 1
+                self.vitesse_deux = 1.5
+                self.defense = 6
+                self.vie = 1500
+                self.puissance = 5
                 self.cout = 3
-                self.talent = "Système Tactique" # Le joueur peut choisir la statistique qu'il préfère lorsque celle-ci se décline sur 2 à 5 plans, parmi toutes les valeurs chiffrées de la carte
+                self.talent = "Système Tactique"
                 
-        class Chien_de_Compagnie:   
-            def Chien_de_Compagnie(self):  
+        class Chien_de_Compagnie:
+            def __init__(self):
                 self.nom = "Chien de Compagnie"
                 self.numero = "12"
                 self.rarete = "Epique"
                 self.type_carte = "Mystère"
-                self.attaque.de_base = 550
-                self.attaque.deux = 225
-                self.vitesse.de_base = 1
-                self.vitesse.deux = 0.75
-                self.defense.de_base = 6
-                self.vie.de_base = 1500
-                self.puissance.de_base = 5
+                self.attaque = 550
+                self.attaque_deux = 225
+                self.vitesse = 1
+                self.vitesse_deux = 0.75
+                self.defense = 6
+                self.vie = 1500
+                self.puissance = 5
                 self.cout = 3
                 self.talent = "Système Tactique"
                 
-        class Guerriers_Elite:   
-            def Guerriers_Elite(self):  
+        class Guerriers_Elite:
+            def __init__(self):
                 self.nom = "Guerriers d'Elite"
                 self.numero = "13"
                 self.rarete = "Epique"
                 self.type_carte = "Royauté"
-                self.attaque.de_base = 225
-                self.vitesse.de_base = 2
-                self.defense.de_base = 6
-                self.vie.de_base = 1500
-                self.puissance.de_base = 5
+                self.attaque = 225
+                self.vitesse = 2
+                self.defense = 6
+                self.vie = 1500
+                self.puissance = 5
                 self.cout = 6
-                self.talent = "Epée Brute" 
+                self.talent = "Epée Brute"
                 
-        class Phonosort:   
-            def Phonosort(self):  
+        class Phonosort:
+            def __init__(self):
                 self.nom = "Phonosort"
                 self.numero = "14"
                 self.rarete = "Mythique"
                 self.type_carte = "Sorts et soins"
-                self.attaque.de_base = 150
-                self.vitesse.de_base = 1
-                self.defense.de_base = 0
-                self.vie.de_base = 250
-                self.puissance.de_base = 2
+                self.attaque = 150
+                self.vitesse = 1
+                self.defense = 0
+                self.vie = 250
+                self.puissance = 2
                 self.cout = 2
                 self.talent = "Rester"
                 
-        class Tornade:   
-            def Tornade(self):  
+        class Tornade:
+            def __init__(self):
                 self.nom = "Tornade"
                 self.numero = "15"
                 self.rarete = "Epique"
                 self.type_carte = "Mystère"
-                self.attaque.de_base = 200
-                self.vitesse.de_base = 1
-                self.defense.de_base = 10
-                self.vie.de_base = 625
-                self.puissance.de_base = 3
+                self.attaque = 200
+                self.vitesse = 1
+                self.defense = 10
+                self.vie = 625
+                self.puissance = 3
                 self.cout = 3
-                self.talent = "Emport" # Remplace la carte adverse par une carte aléatoire ayant une statistique aléatoire la plus forte de son deck
+                self.talent = "Emport"
                 
-        class Drone:   
-            def Drone(self):  
+        class Drone:
+            def __init__(self):
                 self.nom = "Drone"
                 self.numero = "16"
                 self.rarete = "Mythique"
                 self.type_carte = "Technologie"
-                self.attaque.de_base = 300
-                self.vitesse.de_base = 0.75
-                self.defense.de_base = 6
-                self.vie.de_base = 1750
-                self.puissance.de_base = 5
+                self.attaque = 300
+                self.vitesse = 0.75
+                self.defense = 6
+                self.vie = 1750
+                self.puissance = 5
                 self.cout = 4
-                self.talent = "Statique" # Oppose la statistique prévue telle qu'à l'origine et ce peu importe les protections mises en place par l'adversaire
+                self.talent = "Statique"
                 
-        class Incendie:   
-            def Incendie(self):  
+        class Incendie:
+            def __init__(self):
                 self.nom = "Incendie"
                 self.numero = "17"
                 self.rarete = "Légendaire"
                 self.type_carte = "Feu"
-                self.attaque.de_base = 200
-                self.vitesse.de_base = 0.5
-                self.defense.de_base = 0
-                self.vie.de_base = 625
-                self.puissance.de_base = 3
+                self.attaque = 200
+                self.vitesse = 0.5
+                self.defense = 0
+                self.vie = 625
+                self.puissance = 3
                 self.cout = 3
                 self.talent = "Bonus Royal"
                 
-        class Prison:   
-            def Prison(self):  
+        class Prison:
+            def __init__(self):
                 self.nom = "Prison"
                 self.numero = "18"
                 self.rarete = "Légendaire"
                 self.type_carte = "Mystère"
-                self.attaque.de_base = 25
-                self.vitesse.de_base = 1
-                self.defense.de_base = 6
-                self.vie.de_base = 2000
-                self.puissance.de_base = 4
+                self.attaque = 25
+                self.vitesse = 1
+                self.defense = 6
+                self.vie = 2000
+                self.puissance = 4
                 self.cout = 4
                 self.talent = "Rester"
                 
-        class Elektromanipulatrice:   
-            def Elektromanipulatrice(self):  
+        class Elektromanipulatrice:
+            def __init__(self):
                 self.nom = "Elektromanipulatrice"
                 self.numero = "19"
                 self.rarete = "Mythique"
                 self.type_carte = "Foudre"
-                self.attaque.de_base = 750
-                self.vitesse.de_base = 0.25
-                self.defense.de_base = 6
-                self.vie.de_base = 2000
-                self.puissance.de_base = 7
+                self.attaque = 750
+                self.vitesse = 0.25
+                self.defense = 6
+                self.vie = 2000
+                self.puissance = 7
                 self.cout = 7
                 self.talent = "Division"
                 
-        class Bombe:   
-            def Bombe(self):  
+        class Bombe:
+            def __init__(self):
                 self.nom = "Bombe"
                 self.numero = "20"
                 self.rarete = "Commune"
                 self.type_carte = "Technologie"
-                self.attaque.de_base = 300
-                self.vitesse.de_base = 1
-                self.defense.de_base = 0
-                self.vie.de_base = 0
-                self.puissance.de_base = 5
-                self.cout = 3 
-                self.talent = "Fibulatio" # Crée une zone de brûlure qui réduit temporairement la vie de chaque carte adverse posée sur le terrain de 15% pendant leur tour, et ce pendant 3 tours. L'effet du talent est cumulable à l'infini
+                self.attaque = 300
+                self.vitesse = 1
+                self.defense = 0
+                self.vie = 0
+                self.puissance = 5
+                self.cout = 3
+                self.talent = "Fibulatio"
                 
-        class Cage_Elite:   
-            def Cage_Elite(self):  
+        class Cage_Elite:
+            def __init__(self):
                 self.nom = "Cage_Elite"
                 self.numero = "21"
                 self.rarete = "Commune"
                 self.type_carte = "Royauté"
-                self.attaque.de_base = 0
-                self.attaque.deux = 225
-                self.vitesse.de_base = 0
-                self.vitesse.deux = 1
-                self.attaque_privilegiee.couverture_explosive = self.attaque.deux
-                self.defense.de_base = 6
-                self.vie.de_base = self.seconde.Cage_Elite
-                self.seconde.Cage_Elite = 15
-                self.vie.deux = 1500
-                self.puissance.de_base = 3
+                self.attaque = 0
+                self.attaque_deux = 225
+                self.vitesse = 0
+                self.vitesse_deux = 1
+                self.defense = 6
+                self.vie = 15
+                self.vie_deux = 1500
+                self.puissance = 3
                 self.cout = 4
-                self.talent = "Couverture Explosive" # A chaque retour à l'attaque désignée comme "privilégiée", inflige des dégâts de zone à hauteur de 5% multiplié par le nombre de tours passés par chaque carte adverse sur le terrain depuis le début de la partie, cumulable à l'infini. Si la vie atteint 0 (100% de dégâts, 20 tours passés sur le terrain), la carte adverse est gagnée, et ce même si elle n'est pas jouée actuellement. Si le talent se repète au cours de la partie, il ne fait qu'ajouter 5% de dégâts à chaque carte déjà touchée, et applique la première logique aux cartes qui ne l'ont pas subi. L'effet ne s'annule que lorsqu'une carte est regagnée, et ne se réactive pas si cette même carte est reperdue
+                self.talent = "Couverture Explosive"
                 
-        class Cow_Boy:   
-            def Cow_Boy(self):  
+        class Cow_Boy:
+            def __init__(self):
                 self.nom = "Cow-Boy"
                 self.numero = "22"
                 self.rarete = "Mythique"
                 self.type_carte = "Mystère"
-                self.attaque.de_base = 100
-                self.vitesse.de_base = 1
-                self.defense.de_base = 5
-                self.vie.de_base = 1500
-                self.puissance.de_base = 5
+                self.attaque = 100
+                self.vitesse = 1
+                self.defense = 5
+                self.vie = 1500
+                self.puissance = 5
                 self.cout = 4
-                self.talent = "Mirage" # Après avoir été posée, augmente à chaque tour la chance de l'adversaire de rater son attaque de 2.5%, cumulable jusqu'à 100%, avec 2.5% comme valeur initiale au tour 0. Si l'attaque rate, le talent reste actif, mais se réinitialise à 2.5%. Si l'attaque réussit, le talent rajoute 2.5% à la valeur actuelle. Le talent se désactive si la carte est perdue, mais reste réactivable par l'adversaire s'il rejoue la carte, lui attribuant alors l'effet. Si elle est regagnée, elle réapplique la même logique entre chaque joueur.
+                self.talent = "Mirage"
                 
-        class Lianes:   
-            def Lianes(self):  
+        class Lianes:
+            def __init__(self):
                 self.nom = "Lianes"
                 self.numero = "23"
                 self.rarete = "Commune"
                 self.type_carte = "Mystère"
-                self.attaque.de_base = 200
-                self.vitesse.de_base = 1
-                self.defense.de_base = 6
-                self.vie.de_base = self.seconde.Lianes
-                self.seconde.Lianes = 5
-                self.puissance.de_base = 4
-                self.cout = 3 
+                self.attaque = 200
+                self.vitesse = 1
+                self.defense = 6
+                self.vie = 5
+                self.puissance = 4
+                self.cout = 3
                 self.talent = "Rester"
                 
-        class Cyclope:   
-            def Cyclope(self):  
+        class Cyclope:
+            def __init__(self):
                 self.nom = "Cyclope"
                 self.numero = "24"
                 self.rarete = "Rare"
                 self.type_carte = "Mystère"
-                self.attaque.de_base = 250
-                self.vitesse.de_base = 0.75
-                self.defense.de_base = 6
-                self.vie.de_base = 2000
-                self.puissance.de_base = 5
+                self.attaque = 250
+                self.vitesse = 0.75
+                self.defense = 6
+                self.vie = 2000
+                self.puissance = 5
                 self.cout = 5
-                self.talent = "Maladresse" # A 20% de chance de rater son attaque, mais si cette dernière loupe, elle est doublée pour les 2 tours suivants. Si au cours de ces 2 tours, l'attaque rate à nouveau, elle est à nouveau multipliée par 2 pour les 2 tours suivants, et ainsi de suite jusqu'à l'infini et de façon exponentielle. Si l'attaque réussit, le talent se réinitialise à l'attaque de base, et garde la probabilité de 20%. Le talent se désactive si la carte est perdue, mais reste réactivable par l'adversaire s'il rejoue la carte, lui attribuant alors l'effet. Si elle est regagnée, elle réapplique la même logique entre chaque joueur.
+                self.talent = "Maladresse"
                 
-        class Avion_Elite:   
-            def Avion_Elite(self):  
+        class Avion_Elite:
+            def __init__(self):
                 self.nom = "Avion d'Elite"
                 self.numero = "25"
                 self.rarete = "Epique"
                 self.type_carte = "Royauté"
-                self.attaque.de_base = 400
-                self.attaque.deux = 225
-                self.vitesse.de_base = 1
-                self.vitesse.deux = 3
-                self.defense_de_base = 6
-                self.vie_de_base = 2000
+                self.attaque = 400
+                self.attaque_deux = 225
+                self.vitesse = 1
+                self.vitesse_deux = 3
+                self.defense = 6
+                self.vie = 2000
                 self.vie_deux = 1500
-                self.puissance_de_base = 6 
+                self.puissance = 6
                 self.cout = 7
-                self.talent = "Largage Progressif" # Lors de son premier tour, commence avec une attaque égale à 200% de son attaque de base, puis diminue de 25% à chaque tour, jusqu'à atteindre 100% de son attaque de base au 5ème tour. A partir du 6ème tour, l'attaque reste à 100% de son attaque de base. Si la carte est perdue, le talent se réinitialise.
+                self.talent = "Largage Progressif"
 
-        class Oléomage:   
-            def Oléomage(self):  
+        class Oleomage:
+            def __init__(self):
                 self.nom = "Oléomage"
                 self.numero = "26"
                 self.rarete = "Epique"
                 self.type_carte = "Sorts et soins"
-                self.attaque.de_base = 200
-                self.vitesse.de_base = 0.5
-                self.defense.de_base = 5
-                self.vie.de_base = 2000
-                self.puissance.de_base = 4
+                self.attaque = 200
+                self.vitesse = 0.5
+                self.defense = 5
+                self.vie = 2000
+                self.puissance = 4
                 self.cout = 3
                 self.talent = "Emport"
 
-        class Tour_Energie:   
-            def Tour_Energie(self):  
+        class Tour_Energie:
+            def __init__(self):
                 self.nom = "Tour d'Energie"
                 self.numero = "27"
                 self.rarete = "Mythique"
                 self.type_carte = "Mystère"
-                self.attaque.de_base = 350
-                self.vitesse.de_base = 0.5
-                self.defense.de_base = 6
-                self.vie.de_base = 3000
-                self.puissance.de_base = 3
+                self.attaque = 350
+                self.vitesse = 0.5
+                self.defense = 6
+                self.vie = 3000
+                self.puissance = 3
                 self.cout = 6
-                self.talent = "Signal" # Lors de son premier tour, marque la carte adverse posée avec un "signal" : peu importe ce que les deux cartes deviennent, ce lien est gardé de façon à ce que si la carte porteuse du signal est opposée à une carte du deck du possesseur originel de la carte disposant du talent Signal, peu importe la statistique qu'on lui oppose, elle perdra obligatoirement. De ce fait, si la carte possédant le talent Signal est perdue, son talent reste lié à son possesseur d'origine, et n'est donc d'aucune utilité pour l'adversaire
+                self.talent = "Signal"
 
-        class Orage:   
-            def Orage(self):  
+        class Orage:
+            def __init__(self):
                 self.nom = "Orage"
                 self.numero = "28"
                 self.rarete = "Epique"
                 self.type_carte = "Foudre"
-                self.attaque.de_base = 200
-                self.vitesse.de_base = 1
-                self.defense.de_base = 0
-                self.vie.de_base = 0
-                self.puissance.de_base = 5
+                self.attaque = 200
+                self.vitesse = 1
+                self.defense = 0
+                self.vie = 0
+                self.puissance = 5
                 self.cout = 2
                 self.talent = "Division"
 
-        class Garde_Glace:   
-            def Garde_Glace(self):  
+        class Garde_Glace:
+            def __init__(self):
                 self.nom = "Garde-Glace"
                 self.numero = "29"
                 self.rarete = "Mythique"
                 self.type_carte = "Royauté"
-                self.attaque.de_base = 250
-                self.vitesse.de_base = 0.75
-                self.defense.de_base = 6
-                self.vie.de_base = 3000
-                self.puissance.de_base = 3
+                self.attaque = 250
+                self.vitesse = 0.75
+                self.defense = 6
+                self.vie = 3000
+                self.puissance = 3
                 self.cout = 4
-                self.talent = "Cryogénisation" #  Réduit la vitesse de la carte adverse posée de 25% pendant 3 tours si cette dernière est conservée par l'adversaire. En cas de répétition du talent via la même carte ou une autre ayant le même talent face à une carte différente de la carte déjà touchée, le talent s'applique pareillement à la carte, et n'est pas affecté par le nombre de cartes touchées adverses, le nombre de tours restants, ou le nombre de cartes impactées par la même carte possesseuse du talent. Le talent se désactive si la carte est perdue, mais reste réactivable par l'adversaire s'il rejoue la carte, lui attribuant alors l'effet. Si elle est regagnée, elle réapplique la même logique entre chaque joueur. 
+                self.talent = "Cryogénisation"
 
-        class Vent_Glacial:   
-            def Vent_Glacial(self):  
+        class Vent_Glacial:
+            def __init__(self):
                 self.nom = "Vent Glacial"
                 self.numero = "30"
                 self.rarete = "Mythique"
                 self.type_carte = "Sorts et soins"
-                self.attaque.de_base = 100
-                self.vitesse.de_base = 1
-                self.defense.de_base = 0
-                self.vie.de_base = self.seconde.Vent_Glacial
-                self.seconde.Vent_Glacial = 5
-                self.puissance.de_base = 5
+                self.attaque = 100
+                self.vitesse = 1
+                self.defense = 0
+                self.vie = 5
+                self.puissance = 5
                 self.cout = 3
                 self.talent = "Cryogénisation"
 
-        class Pyromancien:   
-            def Pyromancien(self):  
+        class Pyromancien:
+            def __init__(self):
                 self.nom = "Pyromancien"
                 self.numero = "31"
                 self.rarete = "Légendaire"
                 self.type_carte = "Sorts et soins"
-                self.attaque.de_base = 200
-                self.vitesse.de_base = 1
-                self.defense.de_base = 5
-                self.vie.de_base = 1500
-                self.puissance.de_base = 5
+                self.attaque = 200
+                self.vitesse = 1
+                self.defense = 5
+                self.vie = 1500
+                self.puissance = 5
                 self.cout = 3
                 self.talent = "Fibulatio"
 
-        class Cryomancien:   
-            def Cryomancien(self):  
+        class Cryomancien:
+            def __init__(self):
                 self.nom = "Cryomancien"
                 self.numero = "32"
                 self.rarete = "Légendaire"
                 self.type_carte = "Sorts et soins"
-                self.attaque.de_base = 150
-                self.vitesse.de_base = 0.75
-                self.defense.de_base = 5
-                self.vie.de_base = 1500
-                self.puissance_de_base = 5
+                self.attaque = 150
+                self.vitesse = 0.75
+                self.defense = 5
+                self.vie = 1500
+                self.puissance = 5
                 self.cout = 3
                 self.talent = "Cryogénisation"
 
-        class Electromancien:   
-            def Electromancien(self):  
+        class Electromancien:
+            def __init__(self):
                 self.nom = "Electromancien"
                 self.numero = "33"
                 self.rarete = "Légendaire"
                 self.type_carte = "Sorts et soins"
-                self.attaque.de_base = 75
-                self.vitesse.de_base = 2
-                self.defense.de_base = 5
-                self.vie.de_base = 1500
-                self.puissance.de_base = 5
+                self.attaque = 75
+                self.vitesse = 2
+                self.defense = 5
+                self.vie = 1500
+                self.puissance = 5
                 self.cout = 3
                 self.talent = "Rester"
 
-        class Statue:   
-            def Statue(self):  
+        class Statue:
+            def __init__(self):
                 self.nom = "Statue"
                 self.numero = "34"
                 self.rarete = "Rare"
                 self.type_carte = "Mystère"
-                self.attaque.de_base = 200
-                self.vitesse.de_base = 1
-                self.defense.de_base = 6
-                self.vie.de_base = 3000
-                self.puissance.de_base = 6
+                self.attaque = 200
+                self.vitesse = 1
+                self.defense = 6
+                self.vie = 3000
+                self.puissance = 6
                 self.cout = 5
                 self.talent = "Rester"
 
-        class Guérisseur:   
-            def Guérisseur(self):  
+        class Guerisseur:
+            def __init__(self):
                 self.nom = "Guérisseur"
                 self.numero = "35"
                 self.rarete = "Commune"
                 self.type_carte = "Sorts et soins"
-                self.attaque.de_base = 50
-                self.vitesse.de_base = 1
-                self.defense.de_base = 5
-                self.vie.de_base = 3000
-                self.puissance.de_base = 5
+                self.attaque = 50
+                self.vitesse = 1
+                self.defense = 5
+                self.vie = 3000
+                self.puissance = 5
                 self.cout = 3
-                self.talent = "Volatile" # Augmente la vie d'une carte aléatoire de son deck de 200% des dégâts qu'il inflige lors des tours où la carte possesseuse du talent est jouée, cumulable à l'infini. Si la carte est perdue, elle est réutilisable par l'adversaire s'il rejoue la carte, lui attribuant alors l'effet, mais les bonus de vie déjà acquis ne peuvent être perdus par simple changement de camp. Si elle est regagnée, elle réapplique la même logique entre chaque joueur.
+                self.talent = "Volatile"
 
-        class Tour_des_Archers:   
-            def Tour_des_Archers(self):  
+        class Tour_des_Archers:
+            def __init__(self):
                 self.nom = "Tour des Archers"
                 self.numero = "36"
                 self.rarete = "Commune"
                 self.type_carte = "Royauté"
-                self.attaque.de_base = 75
-                self.vitesse.de_base = 2
-                self.defense.de_base = 6
-                self.vie.de_base = 3000
-                self.puissance.de_base = 5
+                self.attaque = 75
+                self.vitesse = 2
+                self.defense = 6
+                self.vie = 3000
+                self.puissance = 5
                 self.cout = 4
                 self.talent = "Bouclier Brut"
 
-        class Tour_Canoniere:   
-            def Tour_Canoniere(self):  
+        class Tour_Canoniere:
+            def __init__(self):
                 self.nom = "Tour Canonière"
                 self.numero = "37"
                 self.rarete = "Commune"
                 self.type_carte = "Royauté"
-                self.attaque.de_base = 100
-                self.vitesse.de_base = 2
-                self.defense.de_base = 6
-                self.vie.de_base = 2500
-                self.puissance.de_base = 5
+                self.attaque = 100
+                self.vitesse = 2
+                self.defense = 6
+                self.vie = 2500
+                self.puissance = 5
                 self.cout = 4
                 self.talent = "Epée Brute"
 
-        class Glaciere:   
-            def Glaciere(self):  
+        class Glaciere:
+            def __init__(self):
                 self.nom = "Glacière"
                 self.numero = "38"
                 self.rarete = "Rare"
                 self.type_carte = "Eau"
-                self.attaque.de_base = 0
-                self.attaque.deux = 50
-                self.vitesse.de_base = 0
-                self.vitesse.deux = nombre_cartes_adverses # Voir talent Relié (La vitesse de la carte en unités est égale au nombre de cartes possedées par l'adversaire durant le tour en cours)
-                self.defense.de_base = 5
-                self.vie.de_base = self.seconde.Glaciere
-                self.seconde.Glaciere = 15
-                self.puissance.de_base = 3
+                self.attaque = 0
+                self.attaque_deux = 50
+                self.vitesse = 0
+                self.vitesse_deux = None # à définir dynamiquement
+                self.defense = 5
+                self.vie = 15
+                self.puissance = 3
                 self.cout = 2
-                self.talent = "Relié" # La vitesse de la carte en unités est égale au nombre de cartes possedées par l'adversaire durant le tour en cours multipliée par une valeur variable prédéfinie pour chaque carte. Si l'adversaire possède plus de 5 cartes, la limite du facteur s'arrête à 5. A chaque tour où le nombre de cartes adverses varie, même si non jouée, la vitesse de la carte est mise à jour en arrière-plan. Si la carte est perdue, le talent et la vitesse de base de la carte se réinitialisent, mais le talent reste réactivable par l'adversaire s'il rejoue la carte, lui attribuant alors l'effet. Si elle est regagnée, elle réapplique la même logique entre chaque joueur.
+                self.talent = "Relié"
 
         class Esprit_Empoisonné:   
             def Esprit_Empoisonné(self):  
@@ -725,7 +1417,7 @@ class Cartes:
                 self.rarete = "Rare"
                 self.type_carte = "Royauté"
                 self.attaque.de_base = 300
-                self.vitesse.de_base = 0.25 < (nombre_cartes_adverses*0.05 + 0.25) <= 0.5
+                self.vitesse.de_base = 0.25 < (self.nombre_cartes_adverses*0.05 + 0.25) <= 0.5
                 self.defense.de_base = 6
                 self.vie.de_base = 2000
                 self.puissance.de_base = 7
@@ -936,10 +1628,10 @@ class Cartes:
                 self.artefact = self.artefact_reproduction
                 self.artefact_reproduction = True
                 if self.carte.artefact == self.artefact_reproduction:
-                    self.carte.attaque = carte.attaque*1.25
-                    self.carte.vitesse = carte.vitesse + 0.5
-                    self.carte.defense = carte.defense + 1
-                    self.carte.vie = carte.vie*1.25
+                    self.carte.attaque = self.carte.attaque*1.25
+                    self.carte.vitesse = self.carte.vitesse + 0.5
+                    self.carte.defense = self.carte.defense + 1
+                    self.carte.vie = self.carte.vie*1.25
                     self.carte.puissance = (self.carte.puissance + self.artefact_reproduction.puissance)//2
                     self.carte.cout = self.carte.cout + self.artefact_reproduction.cout
                     self.carte.talent_facultatif = self.artefact_reproduction.talent
@@ -995,7 +1687,7 @@ class Cartes:
                 self.rarete = "Epique"
                 self.type_carte = "Mystère"
                 self.attaque.de_base = 250
-                self.vitesse.de_base = 0.5 =< (nombre_cartes_adverses*0.5)
+                self.vitesse.de_base = 0.5 <= (self.nombre_cartes_adverses*0.5)
                 self.defense.de_base = 3
                 self.vie.de_base = 2000
                 self.puissance.de_base = 0
@@ -1039,17 +1731,17 @@ class Cartes:
                 self.rarete = "Champion"
                 self.type_carte = "Technologie"
                 self.attaque_initiale = 300
-                self.attaque.de_base = self.attaque_initiale - (self.attaque_initiale*(1 - 0.2*carte.nombre_tours_joues))
+                self.attaque.de_base = self.attaque_initiale - (self.attaque_initiale*(1 - 0.2*self.carte.nombre_tours_joues))
                 self.vitesse.de_base = 0.25
                 self.defense_initiale = 8
-                self.defense.de_base = self.defense_initiale - (self.defense_initiale*(1 - 0.25*carte.nombre_tours_joues))
+                self.defense.de_base = self.defense_initiale - (self.defense_initiale*(1 - 0.25*self.carte.nombre_tours_joues))
                 self.vie.de_base = 3250
                 self.puissance.de_base = 8
                 self.cout = 6
                 self.talent = "Instinct" # Active automatiquement sa capacité lorsque celle-ci est disponible si la carte adverse est plus puissante en termes d'attaque ou de défense lorsque viennent ces statistiques à être en vigueur.
                 self.champion = True
                 self.capacite = "Recharge Energétique"
-                if self.carte.capacite = True:
+                if self.carte.capacite == True:
                     self.attaque = self.attaque_initiale
                     self.defense = self.defense_initiale
                 else:
@@ -1129,6 +1821,20 @@ class Cartes:
                 self.cout = 5
                 self.talent = "Brûlure" # Brûle la carte adverse. Cette dernière garde la trace pendant 3 tours, cette dernière lui infligeant 15% des dégâts de l'attaque de la carte possédant le talent. Si cette carte entre en contact avec une autre carte entre temps, elle lui transmet la marque. La marque s'arrête pour toutes les cartes au bout de 9 tours.
 
+        class Jongleur:   
+            def Jongleur(self):  
+                self.nom = "Jongleur"
+                self.numero = "71"
+                self.rarete = "Rare"
+                self.type_carte = "Mystère"
+                self.attaque.de_base = 150
+                self.vitesse.de_base = 1.25
+                self.defense.de_base = 5
+                self.vie.de_base = 1750
+                self.puissance.de_base = 5
+                self.cout = 4
+                self.talent = "Détournement d'Attention" # A des chances de détourner l'attention de l'adversaire de façon à ce que celui-ci soit "distrait" et ait à son tour ses chances exponentielles de se tromper de cible et d'être incapable d'appliquer sa statistique. Cet effet s'annule entièrement lorsque l'une des deux cartes (Distryante et Distraite) change de camp
+
         class Tue_Loup:   
             def Tue_Loup(self):  
                 self.nom = "Tue-Loup"
@@ -1143,212 +1849,648 @@ class Cartes:
                 self.cout = 4
                 self.talent = "Malédiction Eternelle" # Chaque carte adverse jouée contre la carte porteuse du talent tant que celle-ci appartient à son propriétaire d'origine
 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :   
-            def (self):  
-                self.nom = ""
-                self.numero = ""
-                self.rarete = ""
-                self.type_carte = ""
-                self.attaque.de_base = 
-                self.vitesse.de_base = 
-                self.defense.de_base = 
-                self.vie.de_base = 
-                self.puissance.de_base = 
-                self.cout = 
-                self.talent = "" 
-        class :
+        class Scorpion_Geant:   
+            def Scorpion_Geant(self):  
+                self.nom = "Scorpion Géant"
+                self.numero = "73"
+                self.rarete = "Rare"
+                self.type_carte = "Mystère"
+                self.attaque.de_base = 250
+                self.vitesse.de_base = 0.75
+                self.defense.de_base = 6
+                self.vie.de_base = 2750
+                self.puissance.de_base = 7 
+                self.cout = 6
+                self.talent = "Goutte Empoisonnée"
+
+        class Grand_Chasseur:   
+            def Grand_Chasseur(self):  
+                self.nom = "Grand Chasseur"
+                self.numero = "76"
+                self.rarete = "Champion"
+                self.type_carte = "Mystère"
+                self.attaque.de_base = 200
+                self.vitesse.de_base = 0.75
+                self.defense.de_base = 5
+                self.vie.de_base = 3000
+                self.puissance.de_base = 6 
+                self.cout = 6
+                self.talent = "Entretien de Puissance" # Tant qu'il appartient à son propriétaire d'origine, chaque confrontation remportée lui attribue un supplément de 25% arrondi de la statistique en cours de la carte vaincue
+                self.champion = True
+                self.capacite = "Protection Energétique" # Perd l'entiereté de sa statistique en cours qui vient se soustraire à celle de son adversaire : au tour en cours, on compare alors l'ancienne statistique avant sacrifice et celle devenue après soustraction de l'adversaire. Nombre de tours de recharge : 3. Coût : 1.
+
+        class Tesla:   
+            def Tesla(self):  
+                self.nom = "Tesla"
+                self.numero = "77"
+                self.rarete = "Commune"
+                self.type_carte = "Foudre"
+                self.attaque.de_base = 200
+                self.vitesse.de_base = 0.25
+                self.defense.de_base = 6
+                self.vie.de_base = 2000
+                self.puissance.de_base = 0
+                self.cout = 4
+                self.talent = "Accumulation" # Tant qu'il appartient à son propriétaire d'origine, chaque confrontation gagnée augmente son niveau d'accumualtion : celui-ci détermine comment ses statistiques augmentent de façon exponentielle. Lors de sa défaite, ce sont ces statistiques qu'il inflige à la carte qui le vainc tandis que son niveau d'accumulation revient à 0
+
+        class Machine_Antique:   
+            def Machine_Antique(self):  
+                self.nom = "Machine Antique"
+                self.numero = "78"
+                self.rarete = "Mythique"
+                self.type_carte = "Technologie"
+                self.attaque.de_base = 200
+                self.vitesse.de_base = 1.25
+                self.defense.de_base = 6
+                self.vie.de_base = 2000
+                self.puissance.de_base = 4
+                self.cout = 4
+                self.talent = "Esprit Vengeur" # Augmente ses statistiques d'attaque et de vitesse de 25% pour chaque carte manquante du nombre de cartes originel
+
+        class Mine:   
+            def Mine(self):  
+                self.nom = "Mine"
+                self.numero = "79"
+                self.rarete = "Rare"
+                self.type_carte = "Mystère"
+                self.attaque.de_base = 0
+                self.vitesse.de_base = 0.2
+                self.defense.de_base = 8
+                self.vie.de_base = self.seconde.Mine
+                self.seconde.Mine = 24
+                self.puissance.de_base = 5 
+                self.cout = 5
+                self.talent = "Relance Economique" # Choisit une carte aléatoire de son jeu dont le coût diminue d'un point, puis le reverse à une carte adverse aléatoire. L'effet peut se cumuler jusqu'à l'infini potentiel, mais si la carte est perdue tous ses effets s'annulent.
+
+        class Montagne_Golemites:   
+            def Montagne_Golemites(self):  
+                self.nom = "Montagne aux Golemites"
+                self.numero = "80"
+                self.rarete = "Epique"
+                self.type_carte = "Mystère"
+                self.attaque.de_base = 0
+                self.attaque.deux = 125
+                self.vitesse.de_base = 0.2
+                self.vitesse.deux = 0.25
+                self.defense.de_base = 8
+                self.defense.deux = 7
+                self.vie.de_base = self.seconde.Montagne_Golemites
+                self.seconde.Montagne_Golemites = 24
+                self.vie.deux = 750
+                self.puissance.de_base = 5
+                self.puissance.deux = 3  
+                self.cout = 6
+                self.talent = "Instabilité" # Initie son roulement aléatoirement pour chaque statistique séparément
+
+        class Moulin_Vent:   
+            def Moulin_Vent(self):  
+                self.nom = "Moulin à Vent"
+                self.numero = "81"
+                self.rarete = "Légendaire"
+                self.type_carte = "Technologie"
+                self.attaque.de_base = 0
+                self.attaque.deux = 50
+                self.attaque.trois = 75
+                self.attaque.quatre = 100
+                self.vitesse.de_base = 0.2
+                self.defense.de_base = 3
+                self.vie.de_base = 1500
+                if self.vie.de_base <= 1000:
+                    self.roulement = False
+                    self.attaque_en_vigueur = self.attaque.de_base
+                self.puissance.de_base = 0 
+                self.cout = 4
+                self.talent = "Interrupteur" # Tant que le roulement est actif, le talent agit même lorsqu'il n'est pas présent, faisant chuter progressivement la défense adverse et augmentant la vitesse alliée (temporairement à chaque tour, potentiellement indéfini au cours de la partie jusqu'à prise de la carte possédant le talent)
+
+        class Electrons:   
+            def Electrons(self):  
+                self.nom = "Electrons"
+                self.numero = "82"
+                self.rarete = "Légendaire"
+                self.type_carte = "Foudre"
+                self.attaque.de_base = 75
+                self.vitesse.de_base = 3
+                self.defense.de_base = 3
+                self.vie.de_base = 2250
+                self.puissance.de_base = 5 
+                self.cout = 3
+                self.talent = "Conduction" # Attribue le type Foudre à la carte posée au tour suivant, en plus de son type connu, seulement pour ce tour
+
+        class Malediction:   
+            def Malediction(self):  
+                self.nom = "Malédiction"
+                self.numero = "83"
+                self.rarete = "Mythique"
+                self.type_carte = "Sorts et soins"
+                self.attaque.de_base = 50*self.seconde.Malediction*self.vitesse
+                self.vitesse.de_base = 1
+                self.defense.de_base = 0
+                self.vie.de_base = self.seconde.Malediction
+                self.seconde.Malediction = 12
+                self.puissance.de_base = 5
+                self.cout = 3
+                self.talent = "Assombrissement" # La carte adverse ne peut plus être jouée qu'une fois tous les 3 tours. Un seul lien permis.
+
+        class Sorciere_Mystique:   
+            def Sorciere_Mystique(self):  
+                self.nom = "Sorcière Mystique"
+                self.numero = "84"
+                self.rarete = "Epique"
+                self.type_carte = "Chaos"
+                self.attaque.de_base = 200
+                self.attaque.deux = 25
+                self.vitesse.de_base = 1.25
+                self.vitesse.deux = 1 
+                self.defense.de_base = 5
+                self.defense.deux = 1 
+                self.vie.de_base = 1500
+                self.vie.deux = 25
+                self.puissance.de_base = 7
+                self.cout = 4
+                self.talent = "Maîtrise Magique" # Est insensible aux attributs des cartes de type Monde Magique     
+            
+    class Talents:
+        def Talents(self):
+            Talents = {
+                self.bouclier_brut : "Bouclier Brut",
+                self.epee_brute : "Epée Brute",
+                self.division : "Division",
+                self.goutte_empoisonnee : "Goutte Empoisonnée",
+                self.pique_coeur : "Pique-coeur",
+                self.iode : "Iode",
+                self.bonus_royal : "Bonus Royal",
+                self.rester : "Rester",
+                self.para_chute : "Para-chute",
+                self.systeme_tactique : "Système Tactique",
+                self.emport : "Emport",
+                self.statique : "Statique",
+                self.couverture_explosive : "Couverture Explosive",
+                self.mirage : "Mirage",
+                self.maladresse : "Maladresse",
+                self.larguage_progressif : "Larguage Progressif",
+                self.cryogenisation : "Cryogénisation",
+                self.fibulatio : "Fibulatio",
+                self.volatile : "Volatile",
+                self.relie : "Relié",
+                self.poison_mortel : "Poison Mortel",
+                self.retour_de_flamme : "Retour de Flammes",
+                self.triple_attaque : "Triple-attaque",
+                self.ivresse : "Ivresse",
+                self.alterations : "Altérations",
+                self.aura : "Aura",
+                self.travers : "Travers",
+                self.attaque_surprise : "Attaque Surprise",
+                self.crash : "Crash",
+                self.protection : "Protection",
+                self.cadeau_adieu : "Cadeau d'Adieu",
+                self.charge : "Charge",
+                self.epicentre : "Epicentre",
+                self.onde_choc : "Onde de Choc",
+                self.instinct : "Instinct",
+                self.entrave_poulpe : "Entrave du Poulpe",
+                self.os_maudits : "Os Maudits",
+                self.sans_pitie : "Sans pitié",
+                self.brulure : "Brûlure",
+                self.malediction_eternelle : "Malédiction Eternelle"   
+                }
+            
+    class Bibliothèque_De_Talents:
+        def bibliotheque_de_cartes(self):
+                if carte.talent == "Bouclier Brut":
+                    if self.statistique_en_cours == self.attaque:
+                        probabilite_bouclier_brut = random.randint(1, 5)
+                        if probabilite_bouclier_brut == 1:
+                            carte_adverse.attaque = carte_adverse.attaque_initiale
+                            carte_adverse.attaque = 0
+                            print("Le talent Bouclier Brut de",carte," est actif ! L'attaque de",carte_adverse.nom," est nulle !")
+                            if self.compteur_de_tours > self.tour_actuel:
+                                carte_adverse.attaque_initiale = carte_adverse.attaque
+                                self.tour_actuel = self.compteur_de_tours
+                            else:
+                                return
+                        else:
+                            print("Le talent Bouclier Brut de",carte.nom," est inactif.")
+                    else:
+                        return
+                elif carte.talent == "Epée Brute":
+                    if self.statistique_en_cours == self.attaque:
+                        probabilite_epee_brute = random.randint(1, 5)
+                        if probabilite_epee_brute == 1:
+                            carte.attaque = carte.attaque_initiale
+                            carte.attaque = carte.attaque*2
+                            print("Le talent Epée Brute de",carte.nom," est actif ! Son attaque vient de doubler !")
+                            if self.compteur_de_tours > self.tour_actuel:
+                                carte.attaque_initiale = carte.attaque
+                                self.tour_actuel = self.compteur_de_tours
+                            else:
+                                return
+                        else:
+                            print("Le talent Epée Brute de",carte.nom," est inactif.")
+                    else:
+                        return
+                elif carte.talent == "Division":
+                    carte.attaque = carte.attaque_division
+                    carte.attaque_division = carte.attaque_division//2
+                    if self.compteur_de_tours > self.tour_actuel:
+                        carte = self.carte_tour_suivant
+                        carte.attaque = self.carte_tour_suivant.attaque + carte.attaque_division
+                        print("Le talent Division de",carte.nom,"est actif ! L'attaque de",carte.talent.division.nom," vient d'augmenter !")
+                        self.tour_actuel = self.compteur_de_tours
+                    else:
+                        return
+                elif carte.talent == "Pique-coeur":
+                    if self.statistique_en_cours == self.vie:
+                        carte.vie = carte.vie_initiale
+                        carte_adverse.vie = carte_adverse.vie_initiale
+                        carte.vie = carte.vie + carte_adverse.vie*0.15
+                        carte_adverse.vie = carte_adverse.vie*0.85
+                        print("Le talent Pique-Coeur de",carte.nom," est actif ! La vie de",carte_adverse.nom," est drainée à hauteur de 15% !")
+                        if self.compteur_de_tours > self.tour_actuel:
+                            carte.vie_initiale = carte.vie
+                            carte_adverse.vie_intiale = carte_adverse.vie
+                            self.tour_actuel = self.compteur_de_tours
+                        else:
+                            return
+                    else:
+                        return
+                elif carte.talent == "Iode":
+                    if self.statistique_en_cours == self.statistique_attaque:
+                        if carte_adverse.type_carte == self.feu:
+                            carte.attaque = carte.attaque_initiale
+                            carte.attaque = carte.attaque*3
+                            print("Le talent Iode de",carte.nom," est actif ! Son attaque vient de tripler !")
+                            if self.compteur_de_tours > self.tour_actuel:
+                                carte.attaque_initiale = carte.attaque
+                                self.tour_actuel = self.compteur_de_tours
+                            else:
+                                return
+                        else:
+                            return
+                elif carte.talent == "Bonus Royal":
+                    if carte_adverse.type_carte == "Royauté":
+                        carte.attaque_initiale = carte.attaque
+                        carte.vitesse_initiale = carte.vitesse
+                        carte.defense_initiale = carte.defense
+                        carte.vie_initiale = carte.vie
+                        carte.puissance_initiale = carte.puissance
+                        carte.attaque = carte.attaque*1.25
+                        carte.vitesse = carte.vitesse*1.25
+                        carte.defense = carte.defense*1.25
+                        carte.vie = carte.vie*1.25
+                        carte.puissance = carte.puissance*1.25
+                        print("Le talent Bonus Royal de",carte.nom," est actif ! Ses statistiques augmentent de 25%.")
+                        if self.compteur_de_tours > self.tour_actuel:
+                            carte.attaque = carte.attaque_initiale
+                            carte.vitesse = carte.vitesse_initiale
+                            carte.defense = carte.defense_initiale
+                            carte.vie = carte.vie_initiale
+                            carte.puissance = carte.puissance_initiale
+                            self.tour_actuel = self.compteur_de_tours
+                        else:
+                            return
+                    else:
+                        return
+                elif carte.talent == "Rester":
+                    if carte_adverse.talent != "Rester":
+                        carte_adverse = carte_adverse_rester
+                        carte = self.carte_rester
+                        print("Le talent Rester de",carte.nom," est actif sur",carte_adverse.nom," !")
+                        if carte_adverse_rester.carte.statistique_en_cours > self.carte_rester.carte.statistique_en_cours:
+                            self.carte_rester.carte = carte_adverse_perdue_rester.carte
+                            carte_adverse.carte = carte_adverse_rester.carte
+                            while carte_adverse_perdue_rester.carte != carte_adverse:
+                                break
+                            while carte_adverse_rester.carte != carte_adverse:
+                                break
+                            if carte_adverse_perdue_rester.carte == carte_adverse:
+                                print("La carte",carte_adverse_perdue_rester.carte.nom," liée à la carte", carte_adverse_rester.carte.nom," est jouée ! Le talent Rester est réactif !")
+                                if carte.statistique_en_cours > carte_adverse_perdue_rester.carte.statistique_en_cours:
+                                    carte_adverse_perdue_rester.carte = carte_possedee in self.cartes_possedees
+                                    carte_adverse_rester.carte = carte_possedee in self.cartes_possedees
+                                    print("Le talent Rester s'active ! Les cartes liées",carte_adverse_perdue_rester.carte.nom," et",carte_adverse_rester.carte.nom," sont regagnées !")
+                                    print("Le talent Rester n'est plus actif. Les cartes",carte_adverse_perdue_rester.carte.nom," et",carte_adverse_rester.carte.nom," ne sont plus liées.")
+                                elif carte.statistique_en_cours < carte_adverse_perdue_rester.carte.statistique_en_cours:
+                                    carte_adverse_perdue_rester = carte_adverse in self.cartes_adverses
+                                    carte_adverse_rester = carte_adverse in self.cartes_adverses
+                                    print("Le talent Rester ne s'active pas. Les cartes",carte_adverse_perdue_rester.carte.nom," et",carte_adverse_rester.carte.nom," sont conservées.")
+                                    print("Le talent Rester n'est plus actif. Les cartes",carte_adverse_perdue_rester.carte.nom," et",carte_adverse_rester.carte.nom," ne sont plus liées.")
+                                else:
+                                    while carte.statistique_en_cours == carte_adverse.statistique_en_cours:
+                                        for carte_possedee in self.cartes_possedees:
+                                            carte = random.shuffle(self.cartes_possedees)
+                                        for carte_adverse in self.carte_adverses:
+                                            carte_adverse = random.shuffle(self.cartes_adverses)
+                                        if carte.statistique_en_cours > carte_adverse.statistique_en_cours:
+                                            carte = carte_possedee in self.cartes_possedees
+                                            carte_adverse = carte_possedee in self.cartes_possedees
+                                            carte_adverse_rester = carte_possedee in self.cartes_possedees
+                                            carte_adverse_perdue_rester = carte_possedee in self.cartes_possedees
+                                            print("Le talent Rester s'active ! Les cartes liées",carte_adverse_perdue_rester.carte.nom," et",carte_adverse_rester.carte.nom," sont regagnées !")
+                                            print("Le talent Rester n'est plus actif. Les cartes",carte_adverse_perdue_rester.carte.nom," et",carte_adverse_rester.carte.nom," ne sont plus liées.")
+                                        elif carte.statistique_en_cours < carte_adverse.statistique_en_cours:
+                                            carte = carte_adverse in self.cartes_adverses
+                                            carte_adverse = carte_adverse in self.cartes_adverses
+                                            carte_adverse_rester = carte_adverse in self.cartes_adverses
+                                            carte_adverse_perdue_rester = carte_adverse in self.cartes_adverses
+                                            print("Le talent Rester ne s'active pas. Les cartes",carte_adverse_perdue_rester.carte.nom," et",carte_adverse_rester.carte.nom," sont conservées.")
+                                            print("Le talent Rester n'est plus actif. Les cartes",carte_adverse_perdue_rester.carte.nom," et",carte_adverse_rester.carte.nom," ne sont plus liées.")
+                                        else:
+                                            break
+                            else:
+                                return
+                        elif carte_adverse_rester.carte.statistique_en_cours > self.carte_rester.carte.statistique_en_cours:
+                            carte = carte_possedee_rester
+                            carte_adverse = carte_adverse_possedee_rester
+                            while carte != carte_possedee_rester:
+                                break
+                            while carte != carte_adverse_possedee_rester:
+                                break
+                            if carte_possedee_rester == carte:
+                                print("La carte",carte_possedee_rester.carte.nom," liée à la carte", carte_adverse_possedee_rester.carte.nom," est jouée ! Le talent Rester est réactif !")
+                                if carte_possedee_rester.statistique_en_cours > carte_adverse.statistique_en_cours:
+                                    carte_possedee_rester = carte_possedee in self.cartes_possedees
+                                    carte_adverse_possedee_rester = carte_possedee in self.cartes_possedees
+                                    carte_adverse = carte_possedee in self.cartes_possedees
+                                    print("Le talent Rester s'active ! Les cartes liées",carte_possedee_rester.carte.nom," et",carte_adverse_possedee_rester.carte.nom," sont conservées !")
+                                    print("Le talent Rester n'est plus actif. Les cartes",carte_possedee_rester.carte.nom," et",carte_adverse_possedee_rester.carte.nom," ne sont plus liées.")
+                                elif carte_possedee_rester.statistique_en_cours < carte_adverse.statistique_en_cours:
+                                    carte_possedee_rester = carte_adverse_rester in self.cartes_adverses
+                                    carte_adverse = carte_adverse in self.cartes_adverses
+                                    print("Le talent Rester s'active ! La carte",carte_possedee_rester.nom," est perdue. La carte",carte_adverse_possedee_rester.nom," est conservée.")
+                                    print("Le talent Rester reste actif. Les cartes",carte_possedee_rester.nom," et",carte_adverse_possedee_rester.nom," sont toujours liées.")
+                                    if self.compteur_de_tours > self.tour_actuel:
+                                        while carte_adverse != carte_adverse_rester:
+                                            break
+                                        while carte != carte_adverse_possedee_rester:
+                                            break
+                                        if carte_adverse == carte_adverse_rester:
+                                            if carte.statistique_en_cours > carte_adverse_rester.statistique_en_cours:
+                                                carte = carte_possedee in self.cartes_possedees
+                                                carte_adverse_rester = carte_possedee in self.cartes_possedees
+                                                print("Le talent Rester s'active ! La carte",carte_adverse_rester.carte.nom," liée à la carte",carte_adverse_possedee_rester.carte.nom," est regagnée !")
+                                                print("Le talent Rester n'est plus actif. Les cartes",carte_adverse_rester.carte.nom," et",carte_adverse_possedee_rester.carte.nom," ne sont plus liées.")
+                                            elif carte.statistique_en_cours < carte_adverse_rester.statistique_en_cours:
+                                                carte = carte_adverse in self.cartes_adverses
+                                                carte_adverse_rester in self.cartes_adverses
+                                                carte_adverse_possedee_rester = carte_possedee in self.cartes_possedees
+                                                print("Le talent Rester ne s'active pas. La carte",carte_adverse_rester.nom," n'est pas regagnée. La carte",carte_adverse_possedee_rester.nom," est conservée.")
+                                                print("Le talent Rester n'est plus actif. Les cartes",carte_adverse_rester.nom," et",carte_adverse_possedee_rester.nom," ne sont plus liées.")
+                                            else:
+                                                while carte.statistique_en_cours == carte_adverse.statistique_en_cours:
+                                                    for carte_possedee in self.cartes_possedees:
+                                                        carte = random.shuffle(self.cartes_possedees)
+                                                    for carte_adverse in self.cartes_adverses:
+                                                        carte_adverse = random.shuffle(self.cartes_adverses)
+                                                    if carte.statistique_en_cours > carte_adverse.statistique_en_cours:
+                                                        carte = carte_possedee in self.cartes_possedees
+                                                        carte_adverse = carte_possedee in self.cartes_possedees
+                                                        carte_adverse_rester = carte_possedee in self.cartes_possedees
+                                                        carte_adverse_possedee_rester = carte_possedee in self.cartes_possedees
+                                                        print("Le talent Rester s'active ! Les cartes liées",carte_adverse_perdue_rester.carte.nom," et",carte_adverse_rester.carte.nom," sont regagnées !")
+                                                        print("Le talent Rester n'est plus actif. Les cartes",carte_adverse_perdue_rester.carte.nom," et",carte_adverse_rester.carte.nom," ne sont plus liées.")
+                                                    elif carte.statistique_en_cours < carte_adverse.statistique_en_cours:
+                                                        carte = carte_adverse in self.cartes_adverses
+                                                        carte_adverse = carte_adverse in self.cartes_adverses
+                                                        carte_adverse_rester = carte_adverse in self.cartes_adverses
+                                                        carte_adverse_possedee_rester = carte_possedee in self.cartes_possedees
+                                                        print("Le talent Rester ne s'active pas. Les cartes",carte_adverse_perdue_rester.carte.nom," et",carte_adverse_rester.carte.nom," sont conservées.")
+                                                        print("Le talent Rester n'est plus actif. Les cartes",carte_adverse_perdue_rester.carte.nom," et",carte_adverse_rester.carte.nom," ne sont plus liées.")
+                                                    else:
+                                                        break
+                                                    self.tour_actuel = self.compteur_de_tours
+                                    else:
+                                        return
+                                else:
+                                    while carte_possedee_rester.statistique_en_cours == carte_adverse.statistique_en_cours:
+                                        for carte_possedee in self.cartes_possedees:
+                                            carte = random.shuffle(self.cartes_possedees)
+                                        for carte_adverse in self.carte_adverses:
+                                            carte_adverse = random.shuffle(self.cartes_adverses)
+                                        if carte_possedee_rester.statistique_en_cours > carte_adverse.statistique_en_cours:
+                                            carte_possedee_rester = carte_possedee in self.cartes_possedees
+                                            carte_adverse = carte_possedee in self.cartes_possedees
+                                            carte_adverse_rester = carte_possedee in self.cartes_possedees
+                                            print("Le talent Rester s'active ! La carte",carte_possedee_rester.carte.nom," liée à la carte",carte_adverse_possedee_rester.carte.nom," est regagnée !")
+                                            print("Le talent Rester n'est plus actif. Les cartes",carte_possedee_rester.carte.nom," et",carte_adverse_possedee_rester.carte.nom," ne sont plus liées.")
+                                        elif carte_possedee_rester.statistique_en_cours < carte_adverse.statistique_en_cours:
+                                            carte_possedee_rester = carte_adverse in self.cartes_adverses
+                                            carte_adverse = carte_adverse in self.cartes_adverses
+                                            carte_adverse_rester = carte_adverse in self.cartes_adverses
+                                            print("Le talent Rester ne s'active pas. La carte",carte_possedee_rester.carte.nom," n'est pas regagnée. La carte",carte_adverse_possedee_rester.carte.nom," est conservée.")
+                                            print("Le talent Rester n'est plus actif. Les cartes",carte_possedee_rester.carte.nom," et",carte_adverse_possedee_rester.carte.nom," ne sont plus liées.")
+                                        else:
+                                            break
+                            elif carte_adverse_possedee_rester == carte:
+                                print("La carte",carte_possedee_rester.carte.nom," liée à la carte", carte_adverse_possedee_rester.carte.nom," est jouée ! Le talent Rester est réactif !")
+                                if carte_adverse_possedee_rester.statistique_en_cours > carte.statistique_en_cours:
+                                    carte_adverse_possedee_rester = carte_possedee in self.cartes_possedees
+                                    carte = carte_possedee in self.cartes_possedees
+                                    carte_adverse_rester = carte_possedee in self.cartes_possedees
+                                    print("Le talent Rester s'active ! Les cartes liées",carte_adverse_possedee_rester.carte.nom," et",carte_adverse_rester.carte.nom," sont conservées !")
+                                    print("Le talent Rester n'est plus actif. Les cartes",carte_adverse_possedee_rester.carte.nom," et",carte_adverse_rester.carte.nom," ne sont plus liées.")
+                                elif carte_adverse_possedee_rester.statistique_en_cours < carte.statistique_en_cours:
+                                    carte_adverse_possedee_rester = carte_adverse_rester in self.cartes_adverses
+                                    carte = carte_adverse in self.cartes_adverses
+                                    print("Le talent Rester s'active ! La carte",carte_adverse_possedee_rester.nom," est perdue. La carte",carte_adverse_rester.nom," est conservée.")
+                                    print("Le talent Rester reste actif. Les cartes",carte_adverse_possedee_rester.nom," et",carte_adverse_rester.nom," sont toujours liées.")
+                                    if self.compteur_de_tours > self.tour_actuel:
+                                        while carte != carte_possedee_rester:
+                                            break
+                                        while carte_adverse != carte_adverse_rester:
+                                            break
+                                        if carte == carte_possedee_rester:
+                                            if carte.statistique_en_cours > carte_adverse_rester.statistique_en_cours:
+                                                carte = carte_possedee in self.cartes_possedees
+                                                carte_adverse_rester = carte_possedee in self.cartes_possedees
+                                                print("Le talent Rester s'active ! La carte",carte_possedee_rester.carte," liée à la carte",carte_adverse_rester.carte," est regagnée !")
+                                                print("Le talent Rester n'est plus actif. Les cartes",carte_possedee_rester.carte," et",carte_adverse_rester.carte," ne sont plus liées.")
+                                            elif carte.statistique_en_cours < carte_adverse_rester.statistique_en_cours:
+                                                carte = carte_adverse in self.cartes_adverses
+                                                carte_adverse_rester in self.cartes_adverses
+                                                carte_adverse_possedee_rester = carte_possedee in self.cartes_possedees
+                                                print("Le talent Rester ne s'active pas. La carte",carte_possedee_rester," n'est pas regagnée. La carte",carte_adverse_rester," est conservée.")
+                                                print("Le talent Rester n'est plus actif. Les cartes",carte_possedee_rester," et",carte_adverse_rester," ne sont plus liées.")
+                                            else:
+                                                while carte.statistique_en_cours == carte_adverse.statistique_en_cours:
+                                                    for carte_possedee in self.cartes_possedees:
+                                                        carte = random.shuffle(self.cartes_possedees)
+                                                    for carte_adverse in self.cartes_adverses:
+                                                        carte_adverse = random.shuffle(self.cartes_adverses)
+                                                    if carte.statistique_en_cours > carte_adverse.statistique_en_cours:
+                                                        carte = carte_possedee in self.cartes_possedees
+                                                        carte_adverse = carte_possedee in self.cartes_possedees
+                                                        carte_adverse_rester = carte_possedee in self.cartes_possedees
+                                                        carte_adverse_perdue_rester = carte_possedee in self.cartes_possedees
+                                                        print("Le talent Rester s'active ! La carte ... (truncated in archive)")
+                                                    self.tour_actuel = self.compteur_de_tours
+                
+                elif carte.talent == "Para-chute":
+                    if carte.talent.para_chute == carte.premiere_fois:
+                        carte.talent.para_chute.vie_initiale = carte.talent.para_chute.vie
+                        carte.talent.para_chute.vie = carte.talent.para_chute.vie*1.5
+                        print("Le talent Para-chute de la carte",carte.talent.para_chute.nom," est actif ! Sa vie augmente de 50% pour ce tour !")
+                        if self.compteur_de_tours == self.compteur_de_tours + 1:
+                            carte.talent.para_chute.vie = carte.talent.para_chute.vie_initiale
+                            print("Le talent Para-chute de la carte",carte.talent.para_chute.nom," n'est plus actif. La vie de la carte",carte.talent.para_chute.nom," revient à sa valeur initiale.")
+                        else:
+                            return
+                    else:
+                        return
+                    
+                elif carte.talent == "Système Tactique":
+                    carte.roulement = False
+                    if carte.talent.systeme_tactique == carte:
+                        statistique_choisie = int(input("Quelle statistique de",carte.statistique_en_cours,"souhaitez-vous jouer ?"))
+                        if statistique_choisie == 1:
+                            carte.statistique_en_cours = carte.statistique_choisie.de_base
+                            print("La statistique choisie est",carte.talent.systeme_tactique.statistique_choisie," !")
+                        elif statistique_choisie == 2:
+                            if self.statistique_en_cours.deux == True:
+                                carte.statistique_en_cours = carte.statistique_choisie.deux
+                                print("La statistique choisie est",carte.talent.systeme_tactique.statistique_choisie," !")
+                            else:
+                                print("La statistique choisie n'existe pas ! Choisissez-en une autre.")
+                                return
+                        elif statistique_choisie == 3:
+                            if self.statistique_en_cours.trois == True:
+                                carte.statistique_en_cours = carte.statistique_choisie.trois
+                                print("La statistique choisie est",carte.talent.systeme_tactique.statistique_choisie," !")
+                            else:
+                                print("La statistique choisie n'existe pas ! Choisissez-en une autre.")
+                                return
+                        elif statistique_choisie == 4:
+                            if self.statistique_en_cours.quatre == True:
+                                carte.statistique_en_cours = carte.statistique_choisie.quatre
+                                print("La statistique choisie est",carte.talent.systeme_tactique.statistique_choisie," !")
+                            else:
+                                print("La statistique choisie n'existe pas ! Choisissez-en une autre.")
+                        elif statistique_choisie == 5:
+                            if self.statistique_en_cours.cinq == True:
+                                carte.statistique_en_cours = carte.statistique_choisie.cinq
+                                print("La statistique choisie est",carte.talent.systeme_tactique.statistique_choisie," !")
+                            else:
+                                print("La statistique choisie n'existe pas ! Choisissez-en une autre.")
+                        else:
+                            print("La statistique choisie n'existe pas ! Choisissez-en une autre.")
+                    else:
+                        return
+                
+                elif carte.talent == "emport":
+                    carte_adverse_ignoree = carte_adverse
+                    if carte_adverse_ignoree in self.cartes_adverses:
+                        self.cartes_adverses.remove(carte_adverse_ignoree)
+                        print("Le talent Emport de la carte",carte.talent.emport.nom," est actif ! La carte",carte_adverse_ignoree.nom," est sur le point de se faire remplacer !")
+                        print("Tirage au sort en cours...")
+                        if len(self.cartes_adverses) > 0:
+                            max_attaque = 0
+                            max_vitesse = 0
+                            max_defense = 0
+                            max_vie = 0
+                            max_puissance = 0
+                            for carte_adverse in self.cartes_adverses:
+                                if carte_adverse.attaque > max_attaque:
+                                    max_attaque = carte_adverse.attaque
+                                elif carte_adverse.vitesse > max_vitesse:
+                                    max_vitesse = carte_adverse.vitesse
+                                elif carte_adverse.defense > max_defense:
+                                    max_defense = carte_adverse.defense
+                                elif carte_adverse.vie > max_vie:
+                                    max_vie = carte_adverse.vie
+                                elif carte_adverse.puissance > max_puissance:
+                                    max_puissance = carte_adverse.puissance
+                            meilleures_statistiques = [
+                                ("attaque", max_attaque),
+                                ("vitesse", max_vitesse),
+                                ("defense", max_defense),
+                                ("vie", max_vie),
+                                ("puissance", max_puissance)
+                            ]
+                            statistique_tiree = random.choice(meilleures_statistiques)
+                            for carte_adverse in self.cartes_adverses:
+                                if self.statistique.nom == "attaque" and carte_adverse.attaque == self.valeur_tiree:
+                                    carte_choisie = carte_adverse
+                                if self.statistique.nom == "vitesse" and carte_adverse.vitesse == self.valeur_tiree:
+                                    carte_choisie = carte_adverse
+                                if self.statistique.nom == "defense" and carte_adverse.defense == self.valeur_tiree:
+                                    carte_choisie = carte_adverse
+                                if self.statistique.nom == "vie" and carte_adverse.vie == self.valeur_tiree:
+                                    carte_choisie = carte_adverse
+                                if self.statistique.nom == "puissance" and carte_adverse.puissance == self.valeur_tiree:
+                                    carte_choisie = carte_adverse
+                                print(f"Tirage au sort effectué ! La carte",carte_adverse_ignoree.nom," est remplacée par",carte_choisie.nom," .")
+                                if self.compteur_de_tours > self.tour_actuel:
+                                    self.cartes_adverses.append(carte_adverse_ignoree)
+                                    print("Le talent Emport n'est plus actif. La carte",carte_adverse_ignoree.nom," est réintégrée parmi les cartes adverses.")
+                                    self.tour_actuel = self.compteur_de_tours
+                                else:
+                                    return
+                        else:
+                            return
+                    else:
+                        return
+                elif carte.talent == "Statique":
+                    if carte == carte.talent.statique:
+                        carte_adverse = self.carte_statique
+                        print("Le talent Statique de la carte",carte.talent.statique.nom," est actif ! La carte",self.carte_statique," est impactée.")
+                        if carte == carte.talent.statique and carte_adverse == self.carte_statique:
+                            self.carte_statique.statistique_en_vigueur = 0
+                            print("Le talent Statique de la carte",carte.talent.statique.nom," s'active ! La statistique",carte.statistique_en_cours," de la carte",carte.statique," est annulée !")
+                            if self.compteur_de_tours > self.tour_actuel:
+                                if carte.statistique_en_cours > carte_adverse.statistique_en_cours:
+                                    carte_statique = carte_possedee in self.cartes_possedees
+                                elif carte.statistique_en_cours < carte_adverse.statistique_en_cours:
+                                    carte_statique = carte_adverse in self.cartes_adverses
+                                else:
+                                    while carte.statistique_en_cours == carte_adverse.statistique_en_cours:
+                                        for carte_possedee in self.cartes_possedees:
+                                            carte = random.shuffle(self.cartes_possedees)
+                                        for carte_adverse in self.cartes_adverses:
+                                            carte_adverse = random.shuffle(self.cartes_adverses)
+                                            if carte.statistique_en_cours > carte_adverse.statistique_en_cours:
+                                                carte = carte_possedee in self.cartes_possedees
+                                                carte_adverse = carte_possedee in self.cartes_possedees
+                                                carte.statique = carte_possedee in self.cartes_possedees
+                                            elif carte.statistique_en_cours < carte_adverse.statistique_en_cours:        
+                                                carte = carte_adverse in self.cartes_adverses
+                                                carte_adverse = carte_adverse in self.cartes_adverses
+                                                carte.statique = carte_adverse in self.cartes_adverses
+                                            else:
+                                                break
+                                            self.tour_actuel = self.compteur_de_tours
+                            else:
+                                return
+                        else:
+                            return
+                    else:
+                        return
+                elif carte.talent == "Fibulatio":
+                    if carte.talent == "Fibulatio":
+                        print("Le talent Fibulatio de la carte", carte.nom, "est actif !")
+                        if self.effet_fibulatio == 0:
+                            self.effet_fibulatio = 3
+                            self.tour_debut_fibulatio = self.compteur_de_tours + 1
+                            print("L'effet Fibulatio s'enclenche pour les 3 prochains tours à partir du tour suivant.")
+                        elif self.effet_fibulatio > 0:
+                            self.effet_fibulatio += 3
+                            print("Le talent Fibulatio est réactivé ! L'effet se prolonge de 3 tours supplémentaires !")
+                            print("Nombre de tours restants :", self.effet_fibulatio)
+                        if self.compteur_de_tours >= self.tour_debut_fibulatio:
+                            carte_adverse.vie_initiale = carte_adverse.vie
+                            carte_adverse.vie = carte_adverse.vie * 0.85
+                            print("La vie de la carte adverse", carte_adverse.nom, "est réduite de 15% pour ce tour.")
+                            if self.compteur_de_tours > self.tour_actuel:
+                                carte_adverse.vie = carte_adverse.vie_initiale
+                                print("L'effet Fibulatio cesse pour ce tour, la carte", carte_adverse.nom, "retrouve sa vie initiale.")
+                                self.tour_actuel = self.compteur_de_tours
+                                self.effet_fibulatio -= 1
+                                if self.effet_fibulatio <= 0:
+                                    self.effet_fibulatio = 0
+                                    print("Le talent Fibulatio n'est plus actif.")
+                                else:
+                                    print("Tours restants pour l'effet Fibulatio :", self.effet_fibulatio)
+                            else:
+                                return
+                        else:
+                            print("L'effet Fibulatio commencera au prochain tour.")
+                    else:
+                        return
