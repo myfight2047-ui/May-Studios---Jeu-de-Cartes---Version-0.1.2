@@ -1,9 +1,9 @@
-# jeu_tkinter_pur.py
 import tkinter as tk
 from tkinter import messagebox
 import random
 import math
 import os
+import webbrowser
 
 # ------------------ DONNÉES DU JEU ------------------
 personnages = {
@@ -144,8 +144,17 @@ class MenuFrame(tk.Frame):
                   bg="darkred", fg="white",
                   command=master.quit).pack(pady=20)
 
-
 # ------------------ PAGE : SKIN ------------------
+
+def try_load_image(path):
+    """Essaie de charger une image PNG/GIF avec PhotoImage. Retourne None si impossible."""
+    if not os.path.exists(path):
+        return None
+    try:
+        return tk.PhotoImage(file=path)
+    except tk.TclError:
+        return None
+
 class SkinFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master, bg="darkred")
@@ -156,39 +165,46 @@ class SkinFrame(tk.Frame):
             {"nom": "Skin 2", "image": "images/S2.png"},
         ]
         self.index_skin = 0
-        self.tk_image = None  # reference pour PhotoImage
+        self.tk_image = None  # référence pour PhotoImage
 
+        # ------------------ TITRE ------------------
         tk.Label(self, text="Mode : Skin", font=("Arial", 28, "bold"), bg="darkred", fg="white").pack(pady=40)
 
-        # Charger image (fallback si impossible)
+        # ------------------ IMAGE ------------------
         self.image_label = tk.Label(self, bg="darkred")
         self.image_label.pack(pady=10)
+
+        # ------------------ NOM DU SKIN ------------------
         self.label_skin = tk.Label(self, text="", font=("Arial", 20), bg="darkred", fg="white")
         self.label_skin.pack(pady=10)
 
+        # ------------------ BOUTONS ------------------
         btn_frame = tk.Frame(self, bg="darkred")
         btn_frame.pack(pady=10)
         tk.Button(btn_frame, text="Skin suivant", width=20, command=self.suivant_skin).pack(side="left", padx=10)
         tk.Button(btn_frame, text="Retour au menu", width=20, command=lambda: master.show_frame(MenuFrame)).pack(side="left", padx=10)
 
+        # Affichage initial
         self.update_skin_display()
 
     def update_skin_display(self):
+        """Met à jour l'image et le nom du skin."""
         skin = self.skins[self.index_skin]
         self.label_skin.config(text=f"Skin actuel : {skin['nom']}")
+
         img = try_load_image(skin["image"])
         if img:
             self.tk_image = img
             self.image_label.config(image=self.tk_image, text="")
         else:
-            # fallback text (car pas de PIL / image non supportée)
+            # fallback texte si image non disponible
             self.tk_image = None
             self.image_label.config(image="", text=f"[Image non disponible]\n{skin['image']}", fg="white")
 
     def suivant_skin(self):
+        """Passe au skin suivant."""
         self.index_skin = (self.index_skin + 1) % len(self.skins)
         self.update_skin_display()
-
 
 # ------------------ PAGE : ADM ------------------
 class ADMFrame(tk.Frame):
@@ -564,25 +580,31 @@ class ParametresFrame(tk.Frame):
         if not event.widget.get().strip():
             event.widget.insert(0, text)
 
-
 # ------------------ CREDITS ------------------
 class CreditsFrame(tk.Frame):
     def __init__(self, master):
         super().__init__(master, bg="black")
-        tk.Label(self, text="Crédits", font=("Arial", 28, "bold"), bg="black", fg="white").pack(pady=30)
-        tk.Label(self, text=("Développé par May Studio (2025)\n"
-                             "Merci d'avoir joué !\n\n"
-                             "Version 0.1 (phase de test)\n\n"
-                             "Code : Myfight\n"
-                             "Graphismes : ISTOC Darius\n"
-                             "une petite donnation ne lui ferait pas de mal :\n"
-                             "buymeacoffee.com/DARIUSISTOC1\n"
-                             "protodev : Brunet Aaron"),
-                 font=("Arial", 16), bg="black", fg="white").pack(pady=10)
-        tk.Button(self, text="Retour au menu", width=25, command=lambda: master.show_frame(MenuFrame)).pack(pady=40)
 
+        tk.Label(self, text="Crédits", font=("Arial", 28, "bold"),
+                 bg="black", fg="white").pack(pady=30)
 
-# ------------------ LANCEMENT DU PROGRAMME ------------------
+        tk.Label(self, text=(
+            "Développé par May Studio (2025)\n"
+            "Merci d'avoir joué !\n\n"
+            "Version 0.1 (phase de test)\n\n"
+            "Code : Myfight\n"
+            "Graphismes & interface utilisateur : ISTOC Darius\n"
+            "Donation :"
+        ), font=("Arial", 16), bg="black", fg="white").pack(pady=10)
+
+        tk.Button(self, text="☕ Faire une donation",
+                  command=lambda: webbrowser.open("https://buymeacoffee.com/DARIUSISTOC1"),
+                  width=25, bg="yellow", fg="black").pack(pady=10)
+
+        tk.Button(self, text="Retour au menu", width=25,
+                  command=lambda: master.show_frame(MenuFrame)).pack(pady=40)
+
+# ------------------ LANCEMENT DU PROGRAMME ------------------ 
 if __name__ == "__main__":
     app = JeuDeCartes()
     app.mainloop()
