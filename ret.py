@@ -9,7 +9,7 @@ import webbrowser
 personnages = {
     "perso1": {"nom": "Chevalier Rouge", "pv": 100, "attaque": 25, "defense": 15, "vitesse": 10},
     "perso2": {"nom": "Mage Bleu", "pv": 70, "attaque": 40, "defense": 10, "vitesse": 20},
-    "perso3": {"nom": "Archer Vert", "pv": 85, "attaque": 30, "defense": 12, "vitesse": 25},
+    "perso3": {"nom": "Archer Vert", "pv": 85, "attaque": 330, "defense": 12, "vitesse": 25},
 }
 
 # ------------------ UTILITAIRES ------------------
@@ -608,3 +608,4 @@ class CreditsFrame(tk.Frame):
 if __name__ == "__main__":
     app = JeuDeCartes()
     app.mainloop()
+
