@@ -5,6 +5,8 @@ import math
 import os
 import webbrowser
 
+
+
 # ------------------ DONNÉES DU JEU ------------------
 personnages = {
     "perso1": {"nom": "Chevalier Rouge", "pv": 100, "attaque": 25, "defense": 15, "vitesse": 10},
@@ -608,4 +610,5 @@ class CreditsFrame(tk.Frame):
 if __name__ == "__main__":
     app = JeuDeCartes()
     app.mainloop()
+
 
