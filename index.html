@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Card Game UI</title>
+
 <style>
 body {
     margin: 0;
@@ -11,14 +12,13 @@ body {
     overflow: hidden;
 }
 
-/* zone générale */
 .game {
     position: relative;
     width: 100vw;
     height: 100vh;
 }
 
-/* carte style */
+/* carte de base */
 .card {
     width: 90px;
     height: 130px;
@@ -26,14 +26,13 @@ body {
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     position: absolute;
-    transition: transform 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
 }
 
-/* cartes active */
+/* active cartes */
 .top-active {
     top: 20px;
     left: 50%;
@@ -46,19 +45,19 @@ body {
     transform: translateX(-50%);
 }
 
-/* main du joueur */
+/* main joueur */
 .hand {
     position: absolute;
     bottom: 20px;
     left: 20px;
     display: flex;
-    gap: -20px;
 }
 
 .hand .card {
     position: relative;
     margin-left: -30px;
     cursor: pointer;
+    transition: transform 0.2s;
 }
 
 .hand .card:hover {
@@ -66,57 +65,95 @@ body {
     z-index: 10;
 }
 
-/* deck à droite */
+/* deck */
 .deck {
     position: absolute;
     right: 30px;
     top: 50%;
     transform: translateY(-50%);
+    z-index: 5;
 }
 
-/* pile de défausse */
-.discard-top {
-    top: 20px;
-    right: 30px;
-}
-
-.discard-bottom {
-    bottom: 20px;
-    right: 30px;
-}
-
-/* carte dos (deck / discard) */
+/* cartes dos */
 .back {
     background: linear-gradient(45deg, #444, #222);
     color: white;
 }
 
-/* compteur */
+/* défausses */
+.discard-top {
+    top: 20px;
+    right: 160px;
+    z-index: 1;
+}
+
+.discard-bottom {
+    bottom: 20px;
+    right: 160px;
+    z-index: 1;
+}
+
+/* compteur centré */
 .counter {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background: red;
+    font-size: 20px;
     color: white;
-    font-size: 12px;
-    padding: 3px 6px;
-    border-radius: 50%;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* chat */
+.chat {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 220px;
+    height: 300px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 10px;
+    padding: 10px;
+    color: white;
+    font-size: 14px;
+    overflow: hidden;
+}
+
+.chat input {
+    width: 100%;
+    margin-top: 10px;
+    padding: 5px;
+    border: none;
+    border-radius: 5px;
 }
 </style>
+
 </head>
 <body>
 
 <div class="game">
 
-    <!-- cartes actives -->
-    <div class="card top-active">Adversaire</div>
-    <div class="card bottom-active">Toi</div>
+    <!-- chat -->
+    <div class="chat">
+        <div>💬 Chat</div>
+        <div style="margin-top:10px; opacity:0.7;">
+            joueur1: bonjour<br>
+            joueur2: salut
+        </div>
+        <input placeholder="écrire...">
+    </div>
 
-    <!-- main joueur -->
+    <!-- cartes actives -->
+    <div class="card top-active">ADV</div>
+    <div class="card bottom-active">TOI</div>
+
+    <!-- main -->
     <div class="hand">
         <div class="card">A</div>
         <div class="card">K</div>
-        <div class="card">zQ</div>
+        <div class="card">Q</div>
         <div class="card">J</div>
     </div>
 
