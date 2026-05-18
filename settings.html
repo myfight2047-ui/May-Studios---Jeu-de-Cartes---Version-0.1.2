@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Paramètres</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#111118;
+    color:white;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.settings-box{
+    width:500px;
+    background:#1b1b26;
+    padding:40px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+}
+
+h1{
+    margin-top:0;
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.setting{
+    margin-bottom:25px;
+}
+
+label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:bold;
+}
+
+select,input[type="range"]{
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:10px;
+    background:#2a2a3d;
+    color:white;
+}
+
+.back-btn{
+    width:100%;
+    margin-top:25px;
+    padding:15px;
+    border:none;
+    border-radius:15px;
+    background:#343450;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.back-btn:hover{
+    background:#45456b;
+}
+</style>
+</head>
+<body>
+
+<div class="settings-box">
+    <h1>Paramètres</h1>
+
+    <div class="setting">
+        <label>Volume</label>
+        <input type="range" min="0" max="100" value="50">
+    </div>
+
+    <div class="setting">
+        <label>Qualité graphique</label>
+        <select>
+            <option>Faible</option>
+            <option>Moyen</option>
+            <option selected>Élevé</option>
+        </select>
+    </div>
+
+    <div class="setting">
+        <label>Animations</label>
+        <select>
+            <option>Activées</option>
+            <option>Désactivées</option>
+        </select>
+    </div>
+
+    <button class="back-btn" onclick="location.href='index.html'">
+        Retour
+    </button>
+</div>
+
+</body>
+</html>
