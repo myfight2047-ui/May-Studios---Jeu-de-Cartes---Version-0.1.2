@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeu de Cartes - Paramètres</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root {
+  --bg: #0a0a0b;
+  --bg2: #111113;
+  --bg3: #18181b;
+  --bg4: #222226;
+  --border: #2a2a2f;
+  --border2: #3a3a42;
+  --text: #e8e6e0;
+  --text2: #9a9890;
+  --text3: #6a6865;
+  --blue: #4a9eff;
+}
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  margin: 0;
+  padding: 1rem;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.back-button {
+  background: var(--bg3);
+  border: 0.5px solid var(--border2);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 0.5rem 1rem;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.back-button:hover {
+  background: var(--bg4);
+}
+h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+.sec {
+  border: 0.5px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: var(--bg2);
+  width: 100%;
+}
+.st {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 10px;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.lbl {
+  font-size: 14px;
+  color: var(--text2);
+  min-width: 120px;
+  font-weight: 500;
+}
+input[type="range"] {
+  flex: 1;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+.val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 50px;
+  color: var(--blue);
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="jouer.html" class="back-button">← Retour</a>
+      <h1>Paramètres</h1>
+    </div>
+
+    <div class="sec">
+      <div class="st">Affichage</div>
+      <div class="row">
+        <span class="lbl">Volume</span>
+        <input type="range" min="0" max="100" value="75">
+        <span class="val">75%</span>
+      </div>
+      <div class="row">
+        <span class="lbl">Qualité graphique</span>
+        <input type="range" min="0" max="100" value="50">
+        <span class="val">Moyenne</span>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="st">Contrôles</div>
+      <div class="row">
+        <span class="lbl">Sensibilité souris</span>
+        <input type="range" min="0" max="100" value="50">
+        <span class="val">50%</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
