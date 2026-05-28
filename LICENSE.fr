@@ -1,4 +1,5 @@
 ## License
+
 Ce projet utilise une licence restrictive personnalisée.
 
 - English: [LICENSE](./LICENSE) 
