@@ -1,3 +1,9 @@
+## License
+Ce projet utilise une licence restrictive personnalisée.
+
+- English: [LICENSE](./LICENSE) 
+- Français : [LICENSE.fr](./LICENSE.fr)
+
 # Licence de Contribution Restreinte (LCR) v1.0
 
 Copyright (c) 2026 myfight2047-ui & DARIUSISTOC1
