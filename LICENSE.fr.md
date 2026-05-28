@@ -1,0 +1,60 @@
+# Licence de Contribution Restreinte (LCR) v1.0
+
+Copyright (c) 2026 myfight2047-ui & DARIUSISTOC1
+
+Tous droits réservés.
+
+## 1. Objet
+
+Ce dépôt est fourni uniquement dans le but de consulter, contribuer et améliorer le projet via des pull requests ou des propositions de modifications autorisées.
+
+L’accès à ce dépôt ne donne AUCUN droit d’utiliser, copier, redistribuer, modifier pour un usage personnel, commercialiser, déployer ou réutiliser tout ou partie du code en dehors d’un objectif de contribution au projet.
+
+## 2. Restrictions
+
+Sans autorisation écrite préalable des créateurs, il est interdit de :
+
+* Utiliser le code dans un projet personnel, commercial, éducatif ou public.
+* Copier, redistribuer ou republier le code source.
+* Créer des œuvres dérivées pour un usage indépendant.
+* Utiliser le projet comme modèle, base, framework ou référence pour un autre logiciel.
+* Vendre, sous-licencier, louer, publier ou distribuer le logiciel ou ses versions modifiées.
+* Héberger ou déployer le logiciel publiquement ou privément.
+
+## 3. Utilisation autorisée
+
+Vous êtes uniquement autorisé à :
+
+* Consulter le code source dans le cadre d’une contribution.
+* Créer des forks privés uniquement lorsque cela est nécessaire pour préparer une pull request ou un correctif.
+* Modifier le code exclusivement afin de proposer des améliorations au dépôt officiel.
+
+Toutes les modifications ou contributions réalisées sous cette licence restent la propriété de myfight2047-ui & DARIUSISTOC1 sauf mention écrite contraire.
+
+## 4. Contributions
+
+Toutes les pull requests, propositions de correctifs et modifications suggérées sont soumises à validation par myfight2047-ui & DARIUSISTOC1.
+
+Le fait de soumettre une contribution ne donne aucun droit de propriété ni d’utilisation au contributeur.
+
+## 5. Demandes d’autorisation
+
+Si vous souhaitez utiliser une partie du projet en dehors des usages autorisés par cette licence, vous devez obtenir une autorisation écrite explicite des créateurs.
+
+Toute demande doit préciser :
+
+* L’utilisation prévue
+* Si l’usage est commercial ou non commercial
+* Les parties du code concernées
+
+## 6. Résiliation
+
+Toute violation de cette licence entraîne la résiliation immédiate de tous les droits accordés.
+
+## 7. Clause de non-responsabilité
+
+Le logiciel est fourni « TEL QUEL », sans garantie d’aucune sorte, explicite ou implicite.
+
+## 8. Acceptation
+
+En accédant, consultant, téléchargeant, forkant ou en contribuant à ce dépôt, vous acceptez l’ensemble des conditions de cette licence.
