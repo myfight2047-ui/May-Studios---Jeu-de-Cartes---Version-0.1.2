@@ -1,0 +1,60 @@
+# Restricted Contribution License (RCL) v1.0
+
+Copyright (c) 2026 myfight2047-ui and DARIUSISTOC1
+
+All rights reserved.
+
+## 1. Purpose
+
+The source code of "myfight2047-ui" is provided solely for the purpose of reviewing, contributing to, and improving the project through authorized pull requests or commit proposals.
+
+Access to this repository does NOT grant permission to use, copy, redistribute, modify for personal use, commercialize, deploy, or reuse any part of the code outside of contribution purposes.
+
+## 2. Restrictions
+
+Without prior written permission from DARIUSISTOC1, you may NOT:
+
+* Use the code in any personal, commercial, educational, or public project.
+* Copy, redistribute, or reupload the source code.
+* Create derivative works for independent use.
+* Use the project as a template, base, framework, or reference for another software project.
+* Sell, sublicense, rent, publish, or distribute the software or modified versions of it.
+* Deploy or host the software publicly or privately.
+
+## 3. Allowed Use
+
+You are only permitted to:
+
+* View the source code for contribution purposes.
+* Create private forks only when necessary for preparing pull requests or patches.
+* Modify the code exclusively to submit improvements back to the official repository of "myfight2047-ui".
+
+Any modifications or contributions made under this license remain the property of DARIUSISTOC1 unless stated otherwise in writing.
+
+## 4. Contributions
+
+All pull requests, patches, and suggested modifications are subject to review and approval by DARIUSISTOC1.
+
+Submitting a contribution does NOT grant ownership rights or usage rights to the contributor.
+
+## 5. Permission Requests
+
+If you wish to use any part of this project outside the allowed contribution purposes, you must obtain explicit written permission from DARIUSISTOC1.
+
+Permission requests should clearly describe:
+
+* The intended use
+* Whether the use is commercial or non-commercial
+* Which parts of the code will be used
+
+## 6. Termination
+
+Any violation of this license immediately terminates all granted permissions.
+
+## 7. Disclaimer
+
+This software is provided "AS IS", without warranty of any kind, express or implied.
+
+## 8. Acceptance
+
+By accessing, viewing, downloading, forking, or contributing to this repository, you agree to all terms of this license.
