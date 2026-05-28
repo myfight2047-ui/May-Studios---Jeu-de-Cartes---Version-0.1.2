@@ -3,465 +3,1494 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Formule des Coffres — v5</title>
+<title>Formule des Coffres — Moteur v10</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#0a0a0b;--bg2:#111113;--bg3:#18181b;--bg4:#222226;
-  --border:#2a2a2f;--border2:#3a3a42;
-  --text:#e8e6e0;--text2:#9a9890;--text3:#6a6865;
-  --blue:#4a9eff;--violet:#8b7fff;--green:#34d68a;--red:#ff5a52;
-  --orange:#ff9a3c;--pink:#ff6b9d;
-  --ok-bg:#0d2a1a;--ok:#34d68a;--ko-bg:#2a0d0d;--ko:#ff5a52;
-}
-body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:1rem;}
-h1{font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:1.25rem;}
-.tabs{display:flex;gap:4px;margin-bottom:1rem;flex-wrap:wrap;border-bottom:0.5px solid var(--border);padding-bottom:8px;}
-.tab{padding:4px 14px;border-radius:4px;border:0.5px solid transparent;font-size:12px;font-weight:500;letter-spacing:.04em;cursor:pointer;background:transparent;color:var(--text2);font-family:'IBM Plex Sans',sans-serif;transition:all .15s;}
-.tab:hover{color:var(--text);border-color:var(--border2);}
-.tab.on{background:var(--bg3);border-color:var(--border2);color:var(--text);}
-.sec{border:0.5px solid var(--border);border-radius:6px;padding:.875rem 1rem;margin-bottom:10px;background:var(--bg2);}
-.st{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
-.formula-wrap{overflow-x:auto;padding:12px 14px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:6px;margin:6px 0;}
-.formula-line{font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:2;color:#c8d4e8;white-space:nowrap;display:block;}
-.formula-line .op{color:var(--text3);}.formula-line .var{color:var(--blue);}.formula-line .const{color:var(--orange);}.formula-line .fn{color:var(--violet);}.formula-line .idx{color:var(--text2);font-size:9px;vertical-align:sub;}
-.row{display:flex;align-items:center;gap:10px;margin-bottom:7px;flex-wrap:wrap;}
-.lbl{font-size:12px;color:var(--text2);min-width:100px;font-weight:500;}
-input[type=range]{flex:1;min-width:100px;accent-color:var(--blue);cursor:pointer;}
-input[type=number]{background:var(--bg3);border:0.5px solid var(--border2);border-radius:4px;color:var(--text);padding:4px 8px;font-size:12px;font-family:'IBM Plex Mono',monospace;width:80px;}
-button{background:var(--bg3);border:0.5px solid var(--border2);border-radius:4px;color:var(--text);padding:4px 12px;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background .15s;}
-button:hover{background:var(--bg4);}
-.val{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;min-width:50px;color:var(--blue);}
-.gc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
-.mc{background:var(--bg3);border:0.5px solid var(--border);border-radius:6px;padding:.65rem .9rem;}
-.ml{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.04em;}
-.mv{font-size:17px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--text);}
-.ms{font-size:10px;color:var(--text3);margin-top:2px;}
-.ok{background:var(--ok-bg);color:var(--ok);padding:1px 7px;border-radius:3px;font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
-.ko{background:var(--ko-bg);color:var(--ko);padding:1px 7px;border-radius:3px;font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
-.tr{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:0.5px solid var(--border);font-size:12px;gap:8px;}
+body{font-family:system-ui,sans-serif;background:#0f0f10;color:#e8e6e3;padding:.75rem;font-size:13px;}
+h1{font-size:13px;font-weight:600;margin-bottom:.6rem;color:#636366;}
+.tabs{display:flex;gap:4px;margin-bottom:7px;flex-wrap:wrap;}
+.tab{padding:3px 10px;border-radius:5px;border:.5px solid #3a3a3c;font-size:11px;cursor:pointer;background:transparent;color:#e8e6e3;}
+.tab.on{background:#1c1c1e;border-color:#636366;color:#fff;}
+.subtabs{display:flex;gap:3px;margin-bottom:7px;}
+.subtab{padding:2px 9px;border-radius:4px;border:.5px solid #2c2c2e;font-size:11px;cursor:pointer;background:transparent;color:#8e8e93;}
+.subtab.on{background:#1c1c1e;border-color:#555;color:#e8e6e3;}
+.sec{border:.5px solid #2c2c2e;border-radius:6px;padding:.7rem;margin-bottom:7px;background:#111112;}
+.st{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:5px;}
+.pf{display:flex;flex-direction:column;gap:2px;}
+.pf label{font-size:10px;color:#8e8e93;}
+.pf input,.pf select{background:#1c1c1e;border:.5px solid #3a3a3c;border-radius:4px;color:#e8e6e3;padding:3px 6px;font-size:12px;width:100%;}
+.pf input:focus,.pf select:focus{outline:none;border-color:#555;}
+button{background:#1c1c1e;border:.5px solid #3a3a3c;border-radius:4px;color:#e8e6e3;padding:3px 9px;font-size:11px;cursor:pointer;}
+button:hover{background:#2c2c2e;}
+button.pr{background:#0d2a0d;border-color:#30d158;color:#30d158;}
+button.pr:hover{background:#0f3a0f;}
+button.wr{background:#2a1a0d;border-color:#ffd60a;color:#ffd60a;}
+button.wr:hover{background:#3a2a0f;}
+button.rd{background:#2a0d0d;border-color:#ff453a;color:#ff453a;}
+button.rd:hover{background:#3a0f0f;}
+button.bl{background:#0d1a2a;border-color:#378ADD;color:#378ADD;}
+button.bl:hover{background:#0f2a3a;}
+button.bt{background:#1a0d2a;border-color:#bf5af2;color:#bf5af2;}
+button.bt:hover{background:#260f3a;}
+.gc{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:5px;}
+.mc{background:#1c1c1e;border-radius:5px;padding:.45rem .7rem;}
+.ml{font-size:10px;color:#8e8e93;margin-bottom:1px;}
+.mv{font-size:15px;font-weight:500;}
+.ms{font-size:10px;color:#555;margin-top:1px;}
+.ok{background:#0d3321;color:#30d158;padding:1px 5px;border-radius:3px;font-size:10px;}
+.ko{background:#3a0d0d;color:#ff453a;padding:1px 5px;border-radius:3px;font-size:10px;}
+.tr{display:flex;justify-content:space-between;padding:2px 0;border-bottom:.5px solid #1a1a1a;font-size:11px;}
 .tr:last-child{border-bottom:none;}
-.tr .tl{color:var(--text2);flex:1;}
-.tr .tv{font-family:'IBM Plex Mono',monospace;font-weight:500;text-align:right;}
-.nt{font-size:11px;color:var(--text3);padding:5px 8px;border-left:2px solid var(--border2);margin-top:6px;line-height:1.5;}
-.rc{color:#60a5fa;}.rr{color:#a78bfa;}.re{color:#f472b6;}.rm{color:#fb923c;}.rl{color:#4ade80;}.rh{color:#fbbf24;}
-canvas{display:block;}
-.seq-item{padding:6px 0;border-bottom:0.5px solid var(--border);font-size:12px;}
-.seq-item:last-child{border-bottom:none;}
-.seq-rank{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);min-width:28px;display:inline-block;}
-.seq-rewards{color:var(--text);flex:1;}
-.seq-prob{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--blue);float:right;}
-.seq-slot{display:inline-block;margin:1px 3px;padding:1px 6px;border-radius:3px;font-size:11px;border:0.5px solid var(--border2);background:var(--bg3);}
-.seq-slot.carte{border-color:#3a4a6a;background:#0d1a2a;}
-.seq-slot.piece{border-color:#3a4a3a;background:#0d1a0d;}
-.seq-slot.point{border-color:#4a3a6a;background:#1a0d2a;}
+.nt{font-size:10px;color:#555;padding:3px 6px;border-left:2px solid #2c2c2e;margin-top:4px;}
+.fml{font-family:monospace;font-size:10px;background:#1c1c1e;padding:7px 9px;border-radius:5px;line-height:1.9;color:#a0a09a;white-space:pre-wrap;overflow-x:auto;}
+.vtbl{width:100%;border-collapse:collapse;font-size:10px;}
+.vtbl th{background:#1a1a1a;color:#8e8e93;padding:4px 5px;text-align:right;font-weight:500;position:sticky;top:0;z-index:1;white-space:nowrap;}
+.vtbl th:first-child{text-align:left;}
+.vtbl td{padding:2px 5px;text-align:right;border-bottom:.5px solid #161616;white-space:nowrap;}
+.vtbl td:first-child{text-align:left;color:#555;}
+.vtbl tr:hover td{background:#141414;}
+.vtbl tr.cur td{background:#1a2a1a;}
+.tscroll{max-height:340px;overflow-y:auto;border-radius:5px;border:.5px solid #2c2c2e;}
+.sep{height:.5px;background:#2c2c2e;margin:5px 0;}
+.sim-box{background:#1c1c1e;border-radius:6px;padding:.7rem;margin-bottom:7px;}
+.sim-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:5px;margin-bottom:7px;}
+.sim-stat{background:#111112;border-radius:5px;padding:.4rem .6rem;border:.5px solid #2c2c2e;}
+.sim-label{font-size:10px;color:#8e8e93;margin-bottom:1px;}
+.sim-val{font-size:16px;font-weight:600;}
+.sim-val.gold{color:#ffd60a;}.sim-val.blue{color:#378ADD;}.sim-val.green{color:#30d158;}.sim-val.purple{color:#bf5af2;}.sim-val.teal{color:#5ac8fa;}
+.reward-log{max-height:200px;overflow-y:auto;background:#0f0f10;border-radius:5px;padding:.4rem;font-size:11px;}
+.reward-item{padding:2px 5px;border-radius:3px;margin-bottom:2px;display:flex;justify-content:space-between;}
+.reward-item.carte{background:#0d2a3a;color:#5ac8fa;}.reward-item.piece{background:#2a2a0d;color:#ffd60a;}.reward-item.point{background:#2a0d2a;color:#bf5af2;}.reward-item.xp{background:#0d2a0d;color:#30d158;}
+.hist-entry{background:#1a1a1a;border:.5px solid #2c2c2e;border-radius:5px;padding:.5rem .7rem;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:5px;}
+.hist-entry .hid{font-size:10px;color:#555;}
+.hist-entry .hstats{display:flex;gap:10px;font-size:11px;}
+.hist-entry .hstat{display:flex;flex-direction:column;align-items:center;}
+.hist-entry .hstat span:first-child{font-size:9px;color:#555;}
+.prog-bar{height:4px;background:#1a1a1a;border-radius:2px;margin-top:5px;overflow:hidden;}
+.prog-fill{height:100%;background:#30d158;border-radius:2px;transition:width .1s;}
+.eco-card{background:#1c1c1e;border-radius:6px;padding:.6rem .8rem;border:.5px solid #2c2c2e;}
+.rarity-c{color:#8e8e93;}.rarity-r{color:#7F77DD;}.rarity-e{color:#D4537E;}.rarity-m{color:#D85A30;}.rarity-l{color:#1D9E75;}.rarity-h{color:#BA7517;}
+/* BOUTIQUE */
+.bout-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:8px;}
+.bout-card{background:#1a1a1e;border:.5px solid #2c2c2e;border-radius:8px;padding:.7rem;display:flex;flex-direction:column;gap:6px;}
+.bout-card.free{border-color:#30d158;}
+.bout-card.const-card{border-color:#378ADD;}
+.bout-card.saison-card{border-color:#bf5af2;}
+.bout-card.jour-card{border-color:#3a3a3c;}
+.bout-card.claimed{opacity:.4;pointer-events:none;}
+.bout-card.sold-out{opacity:.5;}
+.bout-tag{font-size:9px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:1px 5px;border-radius:3px;display:inline-block;width:fit-content;}
+.bout-tag.free{background:#0d3321;color:#30d158;}
+.bout-tag.const{background:#0d1a2a;color:#378ADD;}
+.bout-tag.saison{background:#1a0d2a;color:#bf5af2;}
+.bout-tag.jour{background:#1a1a1a;color:#8e8e93;}
+.bout-item-name{font-size:12px;font-weight:500;color:#e8e6e3;}
+.bout-item-sub{font-size:10px;color:#8e8e93;}
+.bout-item-prix{font-size:14px;font-weight:600;color:#ffd60a;}
+.bout-item-limite{font-size:9px;color:#555;}
+.bout-btn{padding:4px 8px;font-size:11px;border-radius:4px;cursor:pointer;border:.5px solid;width:100%;margin-top:2px;}
+.bout-btn.free{background:#0d3321;border-color:#30d158;color:#30d158;}
+.bout-btn.free:hover{background:#0f4a1f;}
+.bout-btn.buy{background:#0d1a2a;border-color:#378ADD;color:#378ADD;}
+.bout-btn.buy:hover{background:#0f2a3a;}
+.bout-btn.disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
+.jour-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;}
+.jour-compteur{font-size:18px;font-weight:600;color:#5ac8fa;}
+.relance-info{font-size:11px;color:#8e8e93;}
+.bout-notif{background:#0d2a0d;border:.5px solid #30d158;border-radius:4px;padding:4px 8px;font-size:11px;color:#30d158;margin-bottom:5px;display:none;}
+.bout-section-title{font-size:11px;font-weight:600;color:#636366;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 5px;}
+.rarity-badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;}
 </style>
 </head>
 <body>
-<h1>Formule des Coffres — Modélisation v5</h1>
-<div class="tabs">
+<h1>Formule des Coffres — Moteur v10</h1>
+<div class="tabs" id="main-tabs">
   <button class="tab on" onclick="T('p')">Paramètres</button>
+  <button class="tab" onclick="T('f')">Formules</button>
+  <button class="tab" onclick="T('sim')">Simulateur</button>
+  <button class="tab" onclick="T('eco')">Économie</button>
+  <button class="tab" onclick="T('bout')">Boutique</button>
+  <button class="tab" onclick="T('hi')">Historique</button>
   <button class="tab" onclick="T('xi')">P(ξ)</button>
   <button class="tab" onclick="T('k')">P(k)</button>
   <button class="tab" onclick="T('b')">Blocs 2-3-4</button>
   <button class="tab" onclick="T('s')">P(slot)</button>
   <button class="tab" onclick="T('g')">Global</button>
+  <button class="tab" onclick="T('sl')">S(l) + Stats</button>
 </div>
+
+<!-- PARAMS -->
 <div id="tp">
-<div class="sec">
-  <div class="st">Formule complète P(Coffre, ξ, k, c)</div>
-  <div class="formula-wrap">
-    <span class="formula-line"><span class="fn">P</span>(Coffre,ξ,k,<b>c</b>) <span class="op">=</span></span>
-    <span class="formula-line"><span class="op">  [</span> <span class="op">(</span><span class="fn">XPmax</span>(<span class="var">l</span>)<span class="op">−</span><span class="var">ξ</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fn">XPmax</span>(<span class="var">l</span>)<span class="op">−</span><span class="fn">XPmin</span>(<span class="var">l</span>)<span class="op">)</span> <span class="op">]^</span><span class="fn">exp</span><span class="op">(</span><span class="const">γ</span><span class="op">(</span><span class="var">l₀</span><span class="op">−</span><span class="var">l</span><span class="op">))</span>  <span class="op">·</span>  <span class="op">[</span> <span class="op">(</span><span class="var">ξ</span><span class="op">−</span><span class="fn">XPmin</span>(<span class="var">l</span>)<span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fn">XPmax</span>(<span class="var">l</span>)<span class="op">−</span><span class="fn">XPmin</span>(<span class="var">l</span>)<span class="op">)</span> <span class="op">]^</span><span class="fn">exp</span><span class="op">(</span><span class="const">γ</span><span class="op">(</span><span class="var">l</span><span class="op">−</span><span class="var">l₀</span><span class="op">))</span></span>
-    <span class="formula-line"><span class="op">  /</span> <span class="op">Σ</span><span class="idx">y∈Sₗ</span>  <span class="op">[</span> <span class="op">(</span><span class="fn">XPmax</span>(<span class="var">l</span>)<span class="op">−</span><span class="var">y</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fn">XPmax</span>(<span class="var">l</span>)<span class="op">−</span><span class="fn">XPmin</span>(<span class="var">l</span>)<span class="op">)</span> <span class="op">]^</span><span class="fn">exp</span><span class="op">(</span><span class="const">γ</span><span class="op">(</span><span class="var">l₀</span><span class="op">−</span><span class="var">l</span><span class="op">))</span>  <span class="op">·</span>  <span class="op">[</span> <span class="op">(</span><span class="var">y</span><span class="op">−</span><span class="fn">XPmin</span>(<span class="var">l</span>)<span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fn">XPmax</span>(<span class="var">l</span>)<span class="op">−</span><span class="fn">XPmin</span>(<span class="var">l</span>)<span class="op">)</span> <span class="op">]^</span><span class="fn">exp</span><span class="op">(</span><span class="const">γ</span><span class="op">(</span><span class="var">l</span><span class="op">−</span><span class="var">l₀</span><span class="op">))</span></span>
-    <span class="formula-line"><span class="op">  ·  </span><span class="fn">exp</span><span class="op">(−(</span><span class="var">k</span><span class="op">−</span><span class="var">μ̄</span><span class="op">(</span><span class="var">l</span><span class="op">))²</span> <span class="op">/</span> <span class="op">2</span><span class="var">ψ</span><span class="op">(</span><span class="var">l</span><span class="op">)²)</span>  <span class="op">/</span>  <span class="op">Σ</span><span class="idx">F=1..10</span>  <span class="fn">exp</span><span class="op">(−(</span><span class="var">F</span><span class="op">−</span><span class="var">μ̄</span><span class="op">(</span><span class="var">l</span><span class="op">))²</span> <span class="op">/</span> <span class="op">2</span><span class="var">ψ</span><span class="op">(</span><span class="var">l</span><span class="op">)²)</span></span>
-    <span class="formula-line"><span class="op">  ·  ∏</span><span class="idx">s=1..k</span>  <span class="op">∏</span><span class="idx">z∈{c,r,e,m,l,h}</span>  <span class="op">[</span> <span class="var">w</span><span class="idx">z</span>  <span class="op">/</span>  <span class="op">(</span><span class="var">n</span><span class="idx">z</span><span class="op">⁽⁰⁾</span>  <span class="op">−</span>  <span class="op">Σ</span><span class="idx">t&lt;s</span>  <span class="var">δ</span><span class="idx">z</span><span class="op">⁽ᵗ⁾</span><span class="op">)</span>  <span class="op">]^</span><span class="var">δ</span><span class="idx">z</span><span class="op">⁽ˢ⁾</span></span>
-    <span class="formula-line"><span class="op">  ·  ∏</span><span class="idx">s=1..k</span>  <span class="op">∏</span><span class="idx">i=0..3</span>  <span class="op">[</span>  <span class="op">(</span><span class="op">(</span><span class="const">1</span><span class="op">−</span><span class="var">ρ</span><span class="op">(</span><span class="var">l</span><span class="op">))</span>  <span class="op">·</span>  <span class="const">0.7</span><span class="op">^(</span><span class="var">i</span><span class="op">·(</span><span class="const">1</span><span class="op">−</span><span class="var">ρ</span><span class="op">(</span><span class="var">l</span><span class="op">)))</span>  <span class="op">/</span>  <span class="op">Σ</span><span class="idx">u=0..3</span>  <span class="const">0.7</span><span class="op">^(</span><span class="var">u</span><span class="op">·(</span><span class="const">1</span><span class="op">−</span><span class="var">ρ</span><span class="op">(</span><span class="var">l</span><span class="op">)))</span>  <span class="op">·</span>  <span class="const">0.75</span>  <span class="op">·</span>  <span class="op">(</span><span class="const">1</span>  <span class="op">−</span>  <span class="op">Σ</span><span class="idx">z</span>  <span class="var">w</span><span class="idx">z</span>  <span class="op">·</span>  <span class="fn">𝟙</span><span class="op">[</span><span class="var">n</span><span class="idx">z</span><span class="op">⁽ˢ⁾</span><span class="op">&gt;0]</span>  <span class="op">/</span>  <span class="var">n</span><span class="idx">z</span><span class="op">⁽ˢ⁾</span><span class="op">)</span>  <span class="op">)^</span><span class="var">α</span><span class="idx">i</span><span class="op">⁽ˢ⁾</span>  <span class="op">]</span></span>
-    <span class="formula-line"><span class="op">  ·  ∏</span><span class="idx">s=1..k</span>  <span class="op">∏</span><span class="idx">j=0..4</span>  <span class="op">[</span>  <span class="op">(</span><span class="var">ρ</span><span class="op">(</span><span class="var">l</span><span class="op">)</span>  <span class="op">·</span>  <span class="const">0.7</span><span class="op">^(</span><span class="var">j</span><span class="op">·(</span><span class="const">1</span><span class="op">−</span><span class="var">ρ</span><span class="op">(</span><span class="var">l</span><span class="op">)))</span>  <span class="op">/</span>  <span class="op">Σ</span><span class="idx">v=0..4</span>  <span class="const">0.7</span><span class="op">^(</span><span class="var">v</span><span class="op">·(</span><span class="const">1</span><span class="op">−</span><span class="var">ρ</span><span class="op">(</span><span class="var">l</span><span class="op">)))</span>  <span class="op">·</span>  <span class="const">0.25</span>  <span class="op">·</span>  <span class="op">(</span><span class="const">1</span>  <span class="op">−</span>  <span class="op">Σ</span><span class="idx">z</span>  <span class="var">w</span><span class="idx">z</span>  <span class="op">·</span>  <span class="fn">𝟙</span><span class="op">[</span><span class="var">n</span><span class="idx">z</span><span class="op">⁽ˢ⁾</span><span class="op">&gt;0]</span>  <span class="op">/</span>  <span class="var">n</span><span class="idx">z</span><span class="op">⁽ˢ⁾</span><span class="op">)</span>  <span class="op">)^</span><span class="var">β</span><span class="idx">j</span><span class="op">⁽ˢ⁾</span>  <span class="op">]</span></span>
-    <span class="formula-line" style="color:var(--text3);font-size:10px;margin-top:6px;">
-      avec : XPmin(l)=⌊10·exp(γl)⌋  XPmax(l)=⌊250·exp(γl)⌋  μ̄(l)=1+9(1−exp(−λl))  ψ(l)=ψ∞+(ψ₀−ψ∞)exp(−κl)  ρ(l)=ρmin+(ρmax−ρmin)(1−exp(−ηl))
-    </span>
-    <span class="formula-line" style="color:var(--text3);font-size:10px;">
-      n_z^(s) = n_z^(0) − Σ_{t&lt;s} δ_z^(t)   |   δ_z^(s)=𝟙[cₛ=carte_z]   α_i^(s)=𝟙[cₛ=pièce_i]   β_j^(s)=𝟙[cₛ=point_j]
-    </span>
+<div class="sec"><div class="st">Paramètres du modèle — v10</div>
+<div class="pg">
+  <div class="pf"><label>γ — taux croissance XP</label><input type="number" id="p_g" value="0.028" step="0.001"></div>
+  <div class="pf"><label>l₀ — symétrie P(ξ)</label><input type="number" id="p_l0" value="35" step="1" min="0" max="100"></div>
+  <div class="pf"><label>λ — vitesse μ̄(l)</label><input type="number" id="p_lm" value="0.030" step="0.001"></div>
+  <div class="pf"><label>ψ₀ — écart-type initial</label><input type="number" id="p_p0" value="3.2" step="0.1"></div>
+  <div class="pf"><label>ψ∞ — écart-type asymp.</label><input type="number" id="p_pi" value="1.4" step="0.1"></div>
+  <div class="pf"><label>κ — vitesse ψ(l)</label><input type="number" id="p_kp" value="0.008" step="0.001"></div>
+  <div class="pf"><label>ρmin</label><input type="number" id="p_rn" value="0.15" step="0.01"></div>
+  <div class="pf"><label>ρmax</label><input type="number" id="p_rx" value="0.50" step="0.01"></div>
+  <div class="pf"><label>η — vitesse ρ(l)</label><input type="number" id="p_eta" value="0.035" step="0.001"></div>
+  <div class="pf"><label>Niveau l courant</label><input type="number" id="p_l" value="0" step="1" min="0" max="100"></div>
+</div>
+</div>
+<div class="sec"><div class="st">Cartes restantes</div>
+<div class="pg">
+  <div class="pf"><label>Communes (max 23)</label><input type="number" id="nz_c" value="23" min="0" max="23"></div>
+  <div class="pf"><label>Rares (max 28)</label><input type="number" id="nz_r" value="28" min="0" max="28"></div>
+  <div class="pf"><label>Épiques (max 31)</label><input type="number" id="nz_e" value="31" min="0" max="31"></div>
+  <div class="pf"><label>Mythiques (max 30)</label><input type="number" id="nz_m" value="30" min="0" max="30"></div>
+  <div class="pf"><label>Légendaires (max 21)</label><input type="number" id="nz_l" value="21" min="0" max="21"></div>
+  <div class="pf"><label>Spéciales (max 7)</label><input type="number" id="nz_h" value="7" min="0" max="7"></div>
+</div>
+</div>
+<div class="sec"><div class="st">Paramètres S(l)</div>
+<div class="pg">
+  <div class="pf"><label>S(0)</label><input type="number" id="p_s0" value="80" step="1" min="10" max="500"></div>
+  <div class="pf"><label>S(1) &gt; S(0)</label><input type="number" id="p_s1" value="120" step="1" min="11" max="500"></div>
+  <div class="pf"><label>r₀</label><input type="number" id="p_r0" value="0.06" step="0.01" min="0" max="1"></div>
+  <div class="pf"><label>r∞</label><input type="number" id="p_ri" value="0.58" step="0.01" min="0" max="1"></div>
+  <div class="pf"><label>τ</label><input type="number" id="p_tau" value="0.016" step="0.001" min="0" max="0.1"></div>
+</div>
+<div class="nt">S(l+2) = S(l+1) + (r∞ − (r∞−r₀)·exp(−τ·l)) · S(l)</div>
+</div>
+<div class="sec"><div class="st">Paramètres Économie carte</div>
+<div class="pg">
+  <div class="pf"><label>α — base stat(n)=stat(1)·α^(n^δ)</label><input type="number" id="e_alpha" value="1.35" step="0.01" min="1.01" max="2"></div>
+  <div class="pf"><label>δ — exposant sous-linéaire (&lt;0.5)</label><input type="number" id="e_delta" value="0.40" step="0.01" min="0.01" max="0.49"></div>
+  <div class="pf"><label>β — coût(n)=C·exp(β·√n)</label><input type="number" id="e_beta" value="0.18" step="0.01" min="0.01" max="2"></div>
+  <div class="pf"><label>C_pts Commune (base points)</label><input type="number" id="e_cp" value="8" step="1" min="1"></div>
+  <div class="pf"><label>C_pc Commune (base pièces)</label><input type="number" id="e_cc" value="320" step="10" min="1"></div>
+  <div class="pf"><label>Friction boutique (×taux)</label><input type="number" id="e_fr" value="1.20" step="0.01" min="1" max="2"></div>
+</div>
+<div class="nt">Détachement garanti si δ &lt; 0.5 (indépendant de α et β)</div>
+</div>
+<div style="display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;">
+  <button class="pr" onclick="applyAll()">▶ Appliquer</button>
+  <button onclick="resetAll()">Réinitialiser v10</button>
+  <button onclick="resetV7()">Réinitialiser v7 (anciens)</button>
+</div>
+<div class="sep"></div>
+<div class="sec"><div class="st">Valeurs calculées au niveau l</div><div class="gc" id="dv"></div></div>
+</div>
+
+<!-- FORMULES -->
+<div id="tf" style="display:none;">
+<div class="sec"><div class="st">Formules complètes</div>
+<div class="fml">P(Coffre, ξ, k, c) = [Bloc XP] × [Bloc k] × [Bloc cartes] × [Bloc pièces] × [Bloc points]</div>
+</div>
+<div class="sec"><div class="st">Prix boutique — v10 (multiples de 5 avec progression stricte)</div>
+<div class="fml">Prix_NG[ng] = décroissance stricte par paliers de 5 pièces
+  NG1=170  NG2=125  NG3=120  NG4=115  NG5=110  NG6=105  NG7=100  NG8=95
+  NG9=90   NG10=85  NG11=80  NG12=75  NG13=70  NG14=65  NG15=60  NG16=55
+  NG17=50  NG18=45  NG19=40  NG20=35
+
+Méthode: floor5(taux_naturel × friction) puis correction bottom-up
+pour garantir une décroissance stricte de 5 en 5 à chaque NG.
+
+Prix cartes boutique journalière:
+  prix_carte(rareté, NG) = floor5(PRIX_NG[ng] × mult_rareté)
+  mult = [Commune×0.8, Rare×2.0, Épique×5.0, Mythique×12.0, Légendaire×28.0, Spéciale×65.0]
+
+Boutique — Limites:
+  Constants  : 50 pts cumulatifs (encourage early progression)
+  Saisonniers: 100 pts par saison
+  Journaliers pts: 20 pts/jour | cartes: 1 exemplaire/article</div>
+</div>
+<div class="sec"><div class="st">Économie carte — Option A</div>
+<div class="fml">stat(n) = stat(1) · α^(n^δ)  avec δ &lt; 0.5
+coût_marg(n) = C · exp(β · √n)
+rendement(n) = Δstat(n) / coût_marg(n) → 0 (détachement garanti)</div>
+</div>
+</div>
+
+<!-- SIMULATEUR -->
+<div id="tsim" style="display:none;">
+<div class="subtabs">
+  <button class="subtab on" id="stab-manuel" onclick="ST('manuel')">Manuel</button>
+  <button class="subtab" id="stab-auto" onclick="ST('auto')">Automatique</button>
+</div>
+<div class="sim-box">
+  <div class="st">État de la partie</div>
+  <div class="sim-stats">
+    <div class="sim-stat"><div class="sim-label">Niveau</div><div class="sim-val" id="ss-l">0</div></div>
+    <div class="sim-stat"><div class="sim-label">XP totale</div><div class="sim-val green" id="ss-xp">0</div></div>
+    <div class="sim-stat"><div class="sim-label">XP niv. suivant</div><div class="sim-val teal" id="ss-xpnext">—</div></div>
+    <div class="sim-stat"><div class="sim-label">Coffres ouverts</div><div class="sim-val" id="ss-cof">0</div></div>
+    <div class="sim-stat"><div class="sim-label">Pièces totales</div><div class="sim-val gold" id="ss-pieces">0</div></div>
+    <div class="sim-stat"><div class="sim-label">Points totaux</div><div class="sim-val purple" id="ss-points">0</div></div>
+    <div class="sim-stat"><div class="sim-label">Cartes débloquées</div><div class="sim-val blue" id="ss-cartes">0</div></div>
+    <div class="sim-stat"><div class="sim-label">Récompenses totales</div><div class="sim-val" id="ss-rew">0</div></div>
+  </div>
+  <div style="display:flex;gap:5px;flex-wrap:wrap;">
+    <button class="bl" onclick="savePartie()">💾 Enregistrer la partie</button>
+    <button class="wr" onclick="simReset()">↺ Réinitialiser</button>
   </div>
 </div>
+<div id="sp-manuel">
+  <div class="sim-box">
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px;">
+      <button class="pr" onclick="simOpen()">🎁 Ouvrir un coffre</button>
+    </div>
+    <div id="sim-coffre-info" style="font-size:11px;color:#555;margin-bottom:5px;"></div>
+    <div class="st" style="margin-bottom:4px;">Dernières récompenses</div>
+    <div class="reward-log" id="reward-log"></div>
+  </div>
+</div>
+<div id="sp-auto" style="display:none;">
+  <div class="sec">
+    <div class="st">Mode automatique</div>
+    <div class="pg" style="margin-bottom:8px;">
+      <div class="pf"><label>Mode</label>
+        <select id="auto-mode" onchange="uAutoUI()">
+          <option value="n">Ouvrir n coffres</option>
+          <option value="l">Ouvrir jusqu'au niveau l</option>
+        </select>
+      </div>
+      <div class="pf" id="auto-pf-n"><label>Nombre de coffres (n)</label><input type="number" id="auto-n" value="50" min="1" max="100000" step="1"></div>
+      <div class="pf" id="auto-pf-l" style="display:none;"><label>Niveau cible</label><input type="number" id="auto-l" value="5" min="1" max="100" step="1"></div>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px;">
+      <button class="pr" id="auto-btn-run" onclick="autoRun()">▶ Lancer</button>
+      <button id="auto-btn-stop" onclick="autoStop()" style="display:none;" class="rd">■ Arrêter</button>
+    </div>
+    <div id="auto-progress" style="display:none;">
+      <div style="font-size:11px;color:#8e8e93;margin-bottom:3px;" id="auto-prog-txt"></div>
+      <div class="prog-bar"><div class="prog-fill" id="auto-prog-fill" style="width:0%"></div></div>
+    </div>
+    <div id="auto-result" style="margin-top:7px;font-size:11px;color:#30d158;"></div>
+  </div>
+</div>
+<div class="sec"><div class="st">Tableau de progression simulée</div>
+<div class="tscroll">
+<table class="vtbl">
+<thead><tr><th>l</th><th>S(l)</th><th>Coffres</th><th>XP gagnée</th><th>Pièces</th><th>Points</th><th>Ratio p/pt</th></tr></thead>
+<tbody id="sim-tbody"></tbody>
+<tfoot><tr style="font-weight:600;background:#1a1a1a;">
+  <td>Total</td><td id="tf-s">—</td><td id="tf-c">—</td><td id="tf-x">—</td>
+  <td id="tf-p">—</td><td id="tf-pt">—</td><td id="tf-r">—</td>
+</tr></tfoot>
+</table>
+</div></div>
+</div>
+
+<!-- ÉCONOMIE -->
+<div id="teco" style="display:none;">
+<div class="subtabs">
+  <button class="subtab on" id="etab-cours" onclick="ET('cours')">Cours par NG</button>
+  <button class="subtab" id="etab-carte" onclick="ET('carte')">Courbes carte</button>
+  <button class="subtab" id="etab-couts" onclick="ET('couts')">Coûts par rareté</button>
+</div>
+<div id="ep-cours">
+<div class="sec"><div class="st">Flux et taux de change par niveau de jeu (NG 1–20) — Prix arrondi ×5 strict</div>
+<div class="tscroll">
+<table class="vtbl" id="ng-tbl">
+<thead><tr>
+  <th>NG</th><th>Niveaux l</th>
+  <th>F_pièces</th><th>F_points</th>
+  <th>Taux naturel</th><th>Prix boutique (p/pt)</th>
+  <th>ρ̄</th><th>k̄ moy</th>
+</tr></thead>
+<tbody id="ng-tbody"></tbody>
+</table>
+</div>
+<div class="nt" id="ng-note"></div>
+</div>
+<div class="sec"><div class="st">Évolution du taux de change pièces → points</div>
+<div style="position:relative;height:220px;"><canvas id="c-taux"></canvas></div>
+<div style="display:flex;gap:7px;margin-top:3px;font-size:10px;color:#8e8e93;" id="taux-leg"></div>
+</div>
+<div class="sec"><div class="st">Flux pièces et points par NG</div>
+<div style="position:relative;height:200px;"><canvas id="c-flux"></canvas></div>
+<div style="display:flex;gap:7px;margin-top:3px;font-size:10px;color:#8e8e93;" id="flux-leg"></div>
+</div>
+</div>
+<div id="ep-carte" style="display:none;">
+<div class="sec"><div class="st">Paramètres interactifs</div>
+<div class="pg" style="margin-bottom:5px;">
+  <div class="pf"><label>stat(1) — auto depuis rareté</label><input type="number" id="ec-s1" value="100" step="1" min="1" readonly style="color:#555;cursor:default;"></div>
+  <div class="pf"><label>n max affiché</label><input type="number" id="ec-nmax" value="100" step="10" min="10" max="2000" oninput="uEcoCarte()"></div>
+  <div class="pf"><label>Rareté</label>
+    <select id="ec-rar" onchange="uEcoCarte()">
+      <option value="0">Commune — stat(1)=100</option>
+      <option value="1">Rare — stat(1)=230</option>
+      <option value="2">Épique — stat(1)=529</option>
+      <option value="3">Mythique — stat(1)=1 217</option>
+      <option value="4">Légendaire — stat(1)=2 799</option>
+      <option value="5">Spéciale — stat(1)=6 437</option>
+    </select>
+  </div>
+</div>
+</div>
+<div class="sec"><div class="st">stat(n) vs coût_cumulé(n)</div>
+<div style="position:relative;height:220px;"><canvas id="c-statcout"></canvas></div>
+<div style="display:flex;gap:7px;margin-top:3px;font-size:10px;color:#8e8e93;" id="sc-leg"></div>
+</div>
+<div class="sec"><div class="st">Rendement marginal Δstat(n) / coût_marginal(n)</div>
+<div style="position:relative;height:180px;"><canvas id="c-rend"></canvas></div>
+<div id="rend-info" class="nt"></div>
+</div>
+<div class="sec"><div class="st">Tableau stat / coût</div>
+<div class="tscroll">
+<table class="vtbl"><thead><tr>
+  <th>n</th><th>stat(n)</th><th>Δstat</th>
+  <th>Coût marg. (pts)</th><th>Coût marg. (p)</th>
+  <th>Coût cum. (pts)</th><th>Coût cum. (p)</th>
+  <th>Rendement</th>
+</tr></thead>
+<tbody id="carte-tbody"></tbody></table>
+</div>
+</div>
+</div>
+<div id="ep-couts" style="display:none;">
+<div class="sec"><div class="st">Coût cumulé pour atteindre le niveau n — toutes raretés</div>
+<div class="pg" style="margin-bottom:5px;">
+  <div class="pf"><label>Niveau carte cible n</label><input type="number" id="ec-ntarget" value="10" step="1" min="1" max="500" oninput="uEcoCouts()"></div>
+</div>
+<div style="position:relative;height:220px;"><canvas id="c-rarete"></canvas></div>
+<div style="display:flex;gap:7px;margin-top:3px;font-size:10px;color:#8e8e93;" id="rar-leg"></div>
+</div>
+<div class="sec"><div class="st">Table comparative</div>
+<div class="tscroll">
+<table class="vtbl" id="rar-tbl">
+<thead><tr>
+  <th>Rareté</th><th>stat(1)</th><th>stat(n)</th><th>×stat</th>
+  <th>Coût cum. pts</th><th>Coût cum. pièces</th>
+  <th>Rendement n</th><th>Détachement?</th>
+</tr></thead>
+<tbody id="rar-tbody"></tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<!-- BOUTIQUE -->
+<div id="tbout" style="display:none;">
 <div class="sec">
-  <div class="st">Niveau</div>
-  <div class="row"><span class="lbl">Niveau l</span><input type="range" min="0" max="100" value="0" id="sl" step="1" oninput="onL()"><span class="val" id="lv">0</span></div>
-  <div class="gc" id="dv" style="margin-top:8px;"></div>
+  <div class="jour-header">
+    <div>
+      <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;">Jour actuel</div>
+      <div class="jour-compteur" id="bout-jour">1</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+      <button class="pr" onclick="boutNextDay()" style="font-size:12px;padding:5px 14px;">Jour suivant ▶</button>
+      <div class="relance-info" id="relance-info">Relances : <span id="relance-count" style="color:#ffd60a;">3</span>/3 &nbsp;|&nbsp; Reset dans <span id="relance-reset-in" style="color:#5ac8fa;">7</span> jours</div>
+      <button onclick="boutRelance()" id="btn-relance" style="font-size:10px;padding:2px 8px;">↺ Relancer articles (<span id="btn-relance-txt">3</span> restantes)</button>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:10px;color:#555;">NG courant</div>
+      <div style="font-size:20px;font-weight:600;color:#bf5af2;" id="bout-ng">1</div>
+      <div style="font-size:10px;color:#555;" id="bout-ng-prix">170 p/pt</div>
+    </div>
+  </div>
+  <div id="bout-notif" class="bout-notif"></div>
 </div>
+
+<!-- CONSTANTS -->
+<div class="bout-section-title">Articles Constants <span style="font-size:9px;color:#555;font-weight:400;">(permanent, limite cumulative)</span></div>
+<div class="bout-grid" id="bout-const-grid">
+</div>
+
+<!-- SAISONNIERS -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+  <div class="bout-section-title" style="margin:0;">Articles Saisonniers <span style="font-size:9px;color:#555;font-weight:400;">(reset manuel)</span></div>
+  <button class="bt" onclick="boutResetSaison()" style="font-size:10px;padding:2px 8px;">↺ Nouvelle saison</button>
+</div>
+<div class="bout-grid" id="bout-saison-grid">
+</div>
+
+<!-- JOURNALIERS -->
+<div class="bout-section-title">Articles Journaliers <span style="font-size:9px;color:#555;font-weight:400;">(reset quotidien)</span></div>
+<div class="bout-grid" id="bout-jour-grid">
+</div>
+
+<!-- STATS BOUTIQUE -->
+<div class="sec" style="margin-top:8px;">
+  <div class="st">Statistiques boutique — session en cours</div>
+  <div class="gc" id="bout-stats-grid"></div>
+</div>
+</div>
+
+<!-- HISTORIQUE -->
+<div id="thi" style="display:none;">
 <div class="sec">
-  <div class="st">Paramètres libres</div>
-  <div class="row"><span class="lbl">l₀</span><input type="range" min="0" max="100" value="50" id="l0s" step="1" oninput="oF()"><span class="val" id="l0v">50</span></div>
-  <div class="row"><span class="lbl">λ (×10⁻³)</span><input type="range" min="1" max="100" value="20" id="lms" step="1" oninput="oF()"><span class="val" id="lmv">0.020</span></div>
-  <div class="nt">l₀ : niveau de symétrie de P(ξ) — bascule petites→grandes XP. λ : vitesse de montée de μ̄(l) de 1 vers 10.</div>
+  <div class="st" style="display:flex;justify-content:space-between;align-items:center;">
+    <span>Parties enregistrées</span>
+    <button class="rd" onclick="clearHistorique()" style="font-size:10px;">Effacer tout</button>
+  </div>
+  <div id="hist-list"></div>
 </div>
-<div class="sec">
-  <div class="st">Cartes restantes par rareté</div>
-  <div id="rg" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:7px;"></div>
+<div class="sec" id="hist-charts-sec" style="display:none;">
+  <div class="st">Moyennes par niveau — toutes parties</div>
+  <div style="display:flex;gap:5px;margin-bottom:7px;flex-wrap:wrap;">
+    <button class="tab on" id="hct-xp" onclick="setHistChart('xp')">XP moy.</button>
+    <button class="tab" id="hct-pieces" onclick="setHistChart('pieces')">Pièces moy.</button>
+    <button class="tab" id="hct-points" onclick="setHistChart('points')">Points moy.</button>
+    <button class="tab" id="hct-coffres" onclick="setHistChart('coffres')">Coffres moy.</button>
+  </div>
+  <div style="position:relative;height:220px;"><canvas id="hist-chart"></canvas></div>
+  <div style="font-size:10px;color:#555;margin-top:4px;" id="hist-chart-info"></div>
 </div>
-<div class="sec">
-  <div class="st">Surcharges manuelles</div>
-  <div class="row"><span class="lbl">γ / η</span><input type="number" id="og" value="0.022" step="0.001"><input type="number" id="oe" value="0.025" step="0.001"></div>
-  <div class="row"><span class="lbl">ρmin / ρmax</span><input type="number" id="orn" value="0.35" step="0.01"><input type="number" id="orx" value="0.65" step="0.01"></div>
-  <div class="row"><span class="lbl">ψ₀ / ψ∞</span><input type="number" id="op0" value="2.5" step="0.1"><input type="number" id="opi" value="0.8" step="0.1"></div>
-  <div class="row"><button onclick="aOv()">Appliquer</button><button onclick="rOv()" style="margin-left:6px;">Reset</button></div>
 </div>
-</div>
+
+<!-- P(xi) -->
 <div id="txi" style="display:none;">
-<div class="sec">
-  <div class="st">P(ξ) — loi bêta discrète</div>
-  <div class="row"><span class="lbl">ξ ciblé</span><input type="range" id="xs" min="10" max="250" value="10" step="1" oninput="uXi()"><span class="val" id="xv">10</span></div>
-  <div id="xr" style="margin-top:6px;"></div>
-  <div class="nt" id="xn"></div>
+<div class="sec"><div class="st">P(ξ)</div>
+<div class="pg" style="margin-bottom:5px;">
+  <div class="pf"><label>ξ ciblé</label><input type="number" id="xi_v" value="10" step="1" oninput="uXi()"></div>
 </div>
-<div class="sec"><div class="st">Courbe P(ξ)</div><div style="position:relative;height:220px;"><canvas id="cxp"></canvas></div></div>
-<div class="sec">
-  <div class="st">Γ₋(l) et Γ₊(l) sur [0..100]</div>
-  <div style="position:relative;height:190px;"><canvas id="cgm"></canvas></div>
-  <div id="gml" style="display:flex;gap:12px;margin-top:5px;font-size:11px;color:var(--text3);"></div>
+<div id="xr"></div><div class="nt" id="xn"></div>
+</div>
+<div class="sec"><div class="st">Courbe P(ξ)</div>
+<div style="position:relative;height:200px;"><canvas id="cxp"></canvas></div></div>
+<div class="sec"><div class="st">Γ₋(l) et Γ₊(l)</div>
+<div style="position:relative;height:180px;"><canvas id="cgm"></canvas></div>
+<div style="display:flex;gap:7px;margin-top:3px;font-size:10px;color:#8e8e93;" id="gml"></div></div>
+<div class="sec"><div class="st">Facteur o(l) = S(l+1)/S(l)</div>
+<div style="position:relative;height:200px;"><canvas id="col"></canvas></div>
+<div style="display:flex;gap:7px;margin-top:3px;font-size:10px;color:#8e8e93;" id="oll"></div>
+<div class="nt" id="oln"></div>
 </div>
 </div>
+
+<!-- P(k) -->
 <div id="tk" style="display:none;">
-<div class="sec"><div class="st">P(k) — gaussienne normalisée [1..10]</div><div id="kr"></div></div>
-<div class="sec"><div class="st">Courbe P(k)</div><div style="position:relative;height:220px;"><canvas id="cpk"></canvas></div></div>
-<div class="sec">
-  <div class="st">μ̄(l) et ψ(l) sur [0..100]</div>
-  <div style="position:relative;height:190px;"><canvas id="cmp"></canvas></div>
-  <div id="mpl" style="display:flex;gap:12px;margin-top:5px;font-size:11px;color:var(--text3);"></div>
+<div class="sec"><div class="st">P(k)</div><div id="kr"></div></div>
+<div class="sec"><div style="position:relative;height:200px;"><canvas id="cpk"></canvas></div></div>
+<div class="sec"><div class="st">μ̄(l) et ψ(l)</div>
+<div style="position:relative;height:180px;"><canvas id="cmp"></canvas></div>
+<div style="display:flex;gap:7px;margin-top:3px;font-size:10px;color:#8e8e93;" id="mpl"></div></div>
 </div>
-</div>
+
+<!-- BLOCS -->
 <div id="tb" style="display:none;">
-<div class="sec">
-  <div class="st">Séquences ordonnées — k slots</div>
-  <div class="row"><span class="lbl">k fixé</span><input type="range" id="ks" min="1" max="6" value="3" step="1" oninput="uB()"><span class="val" id="kv">3</span></div>
-  <div id="br" style="margin-top:6px;"></div>
-  <div class="nt">Les séquences sont ordonnées : (pièce, carte) ≠ (carte, pièce). Chaque slot conditionne les suivants si une carte est débloquée. Top 20 affiché.</div>
+<div class="sec"><div class="st">Blocs 2-3-4</div>
+<div class="pg" style="margin-bottom:5px;">
+  <div class="pf"><label>k (1..6)</label><input type="number" id="p_kb" value="3" step="1" min="1" max="6" oninput="uB()"></div>
 </div>
-<div class="sec">
-  <div class="st">Poids q_i (pièces) et q_j (points) — invariants pour l donné</div>
-  <div style="position:relative;height:220px;"><canvas id="cq"></canvas></div>
-  <div id="ql" style="display:flex;gap:10px;margin-top:5px;font-size:11px;color:var(--text3);"></div>
-  <div class="nt" id="qn"></div>
+<div id="br"></div></div>
+<div class="sec"><div style="position:relative;height:200px;"><canvas id="cq"></canvas></div>
+<div style="display:flex;gap:7px;margin-top:3px;font-size:10px;color:#8e8e93;" id="ql"></div>
+<div class="nt" id="qn"></div></div>
+<div class="sec"><div class="st">Top 20 séquences</div><div id="tc"></div></div>
 </div>
-<div class="sec">
-  <div class="st">Top 20 séquences les plus probables</div>
-  <div id="tc"></div>
-</div>
-</div>
+
+<!-- SLOT -->
 <div id="ts" style="display:none;">
-<div class="sec"><div class="st">P(slot) — état initial</div><div id="sr"></div></div>
-<div class="sec"><div class="st">Détail P(carte) par rareté</div><div id="cd"></div></div>
-<div class="sec"><div style="position:relative;height:200px;"><canvas id="csl"></canvas></div></div>
+<div class="sec"><div class="st">P(slot)</div><div id="sr"></div></div>
+<div class="sec"><div class="st">Détail cartes</div><div id="cd"></div></div>
+<div class="sec"><div style="position:relative;height:180px;"><canvas id="csl"></canvas></div></div>
 </div>
+
+<!-- GLOBAL -->
 <div id="tg" style="display:none;">
-<div class="sec"><div class="st">Synthèse P(Coffre)</div><div class="gc" id="gc"></div></div>
-<div class="sec"><div class="st">Vérifications de normalisation</div><div id="nc"></div></div>
-<div class="sec">
-  <div class="st">ρ(l) sur [0..100]</div>
-  <div style="position:relative;height:200px;"><canvas id="cr"></canvas></div>
-  <div id="rl" style="display:flex;gap:10px;margin-top:5px;font-size:11px;color:var(--text3);"></div>
+<div class="sec"><div class="st">Synthèse</div><div class="gc" id="gc"></div></div>
+<div class="sec"><div class="st">Normalisations</div><div id="nc"></div></div>
+<div class="sec"><div class="st">ρ(l)</div>
+<div style="position:relative;height:180px;"><canvas id="cr"></canvas></div>
+<div style="display:flex;gap:7px;margin-top:3px;font-size:10px;color:#8e8e93;" id="rl"></div></div>
 </div>
+
+<!-- S(l) -->
+<div id="tsl" style="display:none;">
+<div class="sec"><div style="position:relative;height:210px;"><canvas id="cslc"></canvas></div>
+<div style="display:flex;gap:7px;margin-top:3px;font-size:10px;color:#8e8e93;" id="slleg"></div></div>
+<div class="sec"><div class="tscroll"><table class="vtbl">
+<thead><tr><th>l</th><th>S(l→l+1)</th><th>XPmin</th><th>XPmax</th>
+<th>Coffres min</th><th>Coffres max</th><th>Pièces max</th><th>Points max</th>
+<th>E[pièces/niv]</th><th>E[points/niv]</th></tr></thead>
+<tbody id="sltb"></tbody>
+<tfoot><tr style="font-weight:600;background:#1a1a1a;">
+  <td>Total l=0→100</td><td id="tf_s">—</td><td>—</td><td>—</td>
+  <td id="tf_cmin">—</td><td id="tf_cmax">—</td>
+  <td id="tf_pmax">—</td><td id="tf_ptmax">—</td>
+  <td id="tf_ep">—</td><td id="tf_ept">—</td>
+</tr></tfoot>
+</table></div></div>
 </div>
+
 <script>
-let C={g:.022,eta:.025,rn:.35,rx:.65,p0:2.5,pi:.8,kp:.01};
-let l0=50,lm=.020;
+// ── ÉTAT ──
+let C={g:.028,l0:35,lm:.030,p0:3.2,pi:1.4,kp:.008,rn:.15,rx:.50,eta:.035,l:0};
+let SLP={s0:80,s1:120,r0:.06,ri:.58,tau:.016};
+let EP={alpha:1.35,delta:0.40,beta:0.18,cp:8,cc:320,fr:1.20};
 const wz={c:.5,r:.25,e:.125,m:.075,l:.04,h:.01};
 const nzt={c:23,r:28,e:31,m:30,l:21,h:7};
 const R=['c','r','e','m','l','h'];
-const RL={c:'Commune',r:'Rare',e:'Épique',m:'Mythique',l:'Légendaire',h:'Spécial'};
-const RCLS={c:'rc',r:'rr',e:'re',m:'rm',l:'rl',h:'rh'};
+const RL={c:'Commune',r:'Rare',e:'Épique',m:'Mythique',l:'Légendaire',h:'Spéciale'};
+const RC={c:'#8e8e93',r:'#7F77DD',e:'#D4537E',m:'#D85A30',l:'#1D9E75',h:'#BA7517'};
+const vPieces=[25,50,100,200],vPoints=[1,2,3,4,5];
+const RARITY_STAT1=[100,230,529,1217,2799,6437];
+const RARITY_NAMES=['Commune','Rare','Épique','Mythique','Légendaire','Spéciale'];
+const RARITY_KEYS=['c','r','e','m','l','h'];
+// Multiplicateurs boutique journalière pour les cartes
+const RARITY_MULT_BOUT=[0.8,2.0,5.0,12.0,28.0,65.0];
+// Prix boutique v10: décroissance stricte par paliers de 5 (calculés bottom-up)
+const PRIX_BOUTIQUE_NG=[170,125,120,115,110,105,100,95,90,85,80,75,70,65,60,55,50,45,40,35];
+
+function rarMultPt(ri){return RARITY_STAT1[ri]/RARITY_STAT1[0];}
+function rarMultPc(ri){return rarMultPt(ri)*(1-0.06*ri);}
+const RARITY_MULT_PT=RARITY_STAT1.map((_,ri)=>rarMultPt(ri));
+const RARITY_MULT_PC=RARITY_STAT1.map((_,ri)=>rarMultPc(ri));
 let nz={c:23,r:28,e:31,m:30,l:21,h:7};
 let CH={};
+let HISTORIQUE=[];
+let autoRunning=false;
+let SIM={l:0,xpTotal:0,xpNiveau:0,coffres:0,pieces:0,points:0,cartes:0,recompenses:0,
+  nzSim:{c:23,r:28,e:31,m:30,l:21,h:7},niveaux:[],coffresNiveau:0,piecesNiveau:0,pointsNiveau:0};
 
-const gL=()=>parseInt(document.getElementById('sl').value);
+// ── BOUTIQUE STATE ──
+const BOUT_CST_LIMITE=50;   // pts cumulatifs constants
+const BOUT_SAI_LIMITE=100;  // pts par saison
+const BOUT_JOUR_LIMITE_PTS=20; // pts/jour achat direct
+
+let BOUT={
+  jour:1,
+  relancesRestantes:3,
+  prochainResetRelances:7,
+  // Constants
+  cst_pointsAchetes:0,
+  // Saisonniers
+  sai_pointsAchetes:0,
+  // Journaliers
+  jour_cadeauReclame:false,
+  jour_pointsAchetes:0,
+  items:[],          // 5 articles payants aléatoires
+  cadeauItem:null,   // article gratuit du jour
+  // Stats
+  stats:{
+    totalCadeaux:0,
+    totalAchatsCST:0,
+    totalAchatsSAI:0,
+    totalAchatsJour:0,
+    totalPiecesDepensees:0,
+    totalPointsRecus:0,
+    totalCartesRecues:0,
+    totalCadeau_pts:0,
+    totalCadeau_pieces:0,
+    totalCadeau_cartes:0,
+    parNG:{}  // {ng:{pts:0,pieces:0,cartes:0}}
+  }
+};
+
+// ── MATHS COFFRES ──
 const Xn=l=>Math.max(1,Math.floor(10*Math.exp(C.g*l)));
 const Xx=l=>Math.floor(250*Math.exp(C.g*l));
-const Gm=l=>Math.exp(C.g*(l0-l));
-const Gp=l=>Math.exp(C.g*(l-l0));
-const mu=l=>1+9*(1-Math.exp(-lm*l));
+const Gm=l=>Math.exp(C.g*(C.l0-l));
+const Gp=l=>Math.exp(C.g*(l-C.l0));
+const mu=l=>1+9*(1-Math.exp(-C.lm*l));
 const ps=l=>C.pi+(C.p0-C.pi)*Math.exp(-C.kp*l);
 const rh=l=>C.rn+(C.rx-C.rn)*(1-Math.exp(-C.eta*l));
+const pCnz=nzs=>R.reduce((s,z)=>s+(nzs[z]>0?wz[z]/nzs[z]:0),0);
+const floor5=x=>Math.floor(x/5)*5;
+const ngCourant=()=>Math.min(20,Math.floor(SIM.l/5)+1);
+const prixBoutiqueNG=ng=>PRIX_BOUTIQUE_NG[Math.min(19,ng-1)];
 
-function pCarte(nzState){
-  return R.reduce((s,z)=>s+(nzState[z]>0?wz[z]/nzState[z]:0),0);
-}
+function bv(xi,l){const mn=Xn(l),mx=Xx(l);if(mx<=mn)return 0;const t=(xi-mn)/(mx-mn),s=(mx-xi)/(mx-mn);return(t<=0||s<=0)?0:Math.pow(s,Gm(l))*Math.pow(t,Gp(l));}
+function pXi(xi,l){let d=0;const mn=Xn(l),mx=Xx(l);for(let y=mn;y<=mx;y++)d+=bv(y,l);return d>0?bv(xi,l)/d:0;}
+function pXiSum(l){let s=0;const mn=Xn(l),mx=Xx(l);for(let y=mn;y<=mx;y++)s+=pXi(y,l);return s;}
+function sampleXi(l){const mn=Xn(l),mx=Xx(l);let d=0;for(let y=mn;y<=mx;y++)d+=bv(y,l);let cum=0,r=Math.random();for(let y=mn;y<=mx;y++){cum+=bv(y,l)/d;if(r<=cum)return y;}return mx;}
+function pK(k,l){let d=0;for(let f=1;f<=10;f++)d+=Math.exp(-Math.pow(f-mu(l),2)/(2*Math.pow(ps(l),2)));return d>0?Math.exp(-Math.pow(k-mu(l),2)/(2*Math.pow(ps(l),2)))/d:0;}
+function kBar(l){let s=0;for(let k=1;k<=10;k++)s+=k*pK(k,l);return s;}
+function eXi(l){let s=0;const mn=Xn(l),mx=Xx(l);for(let y=mn;y<=mx;y++)s+=y*pXi(y,l);return s;}
+function sampleK(l){let d=0,r=Math.random(),cum=0;for(let k=1;k<=10;k++)d+=Math.exp(-Math.pow(k-mu(l),2)/(2*Math.pow(ps(l),2)));for(let k=1;k<=10;k++){cum+=Math.exp(-Math.pow(k-mu(l),2)/(2*Math.pow(ps(l),2)))/d;if(r<=cum)return k;}return 5;}
+function qi(i,l){const e=1-rh(l);let d=0;for(let u=0;u<4;u++)d+=Math.pow(.7,u*e);return d>0?e*Math.pow(.7,i*e)/d:0;}
+function qj(j,l){const r=rh(l),e=1-r;let d=0;for(let v=0;v<5;v++)d+=Math.pow(.7,v*e);return d>0?r*Math.pow(.7,j*e)/d:0;}
+function ePieces(l){let s=0;for(let i=0;i<4;i++)s+=qi(i,l)*vPieces[i];return kBar(l)*s;}
+function ePoints(l){let s=0;for(let j=0;j<5;j++)s+=qj(j,l)*vPoints[j];return kBar(l)*s;}
 
-function bv(xi,l){
-  const mn=Xn(l),mx=Xx(l);
-  if(mx<=mn)return 0;
-  const t=(xi-mn)/(mx-mn),s=(mx-xi)/(mx-mn);
-  return(t<=0||s<=0)?0:Math.pow(s,Gm(l))*Math.pow(t,Gp(l));
-}
-function pXi(xi,l){
-  let d=0;const mn=Xn(l),mx=Xx(l);
-  for(let y=mn;y<=mx;y++)d+=bv(y,l);
-  return d>0?bv(xi,l)/d:0;
-}
-function pXiS(l){
-  let s=0;const mn=Xn(l),mx=Xx(l);
-  for(let y=mn;y<=mx;y++)s+=pXi(y,l);
-  return s;
-}
-function gK(k,l){const m=mu(l),p=ps(l);return Math.exp(-Math.pow(k-m,2)/(2*p*p));}
-function pK(k,l){let d=0;for(let f=1;f<=10;f++)d+=gK(f,l);return d>0?gK(k,l)/d:0;}
-
-function qi(i,l){
-  const r=rh(l),e=1-r;
-  let d=0;for(let u=0;u<4;u++)d+=Math.pow(.7,u*e);
-  return d>0?e*Math.pow(.7,i*e)/d:0;
-}
-function qj(j,l){
-  const r=rh(l),e=1-r;
-  let d=0;for(let v=0;v<5;v++)d+=Math.pow(.7,v*e);
-  return d>0?r*Math.pow(.7,j*e)/d:0;
+function sampleSlot(l,nzs){
+  const pc=pCnz(nzs),pp=0.75*(1-pc),po=0.25*(1-pc),r=Math.random();
+  if(r<pc){let cum=0,r2=Math.random()*pc;for(const z of R){if(nzs[z]>0){cum+=wz[z]/nzs[z];if(r2<=cum)return{type:'carte',z};}}return{type:'carte',z:'c'};}
+  else if(r<pc+pp){const e=1-rh(l);let d=0;for(let u=0;u<4;u++)d+=Math.pow(.7,u*e);let cum2=0,r3=Math.random();for(let i=0;i<4;i++){cum2+=Math.pow(.7,i*e)/d;if(r3<=cum2)return{type:'piece',i};}return{type:'piece',i:0};}
+  else{const e=1-rh(l);let d=0;for(let v=0;v<5;v++)d+=Math.pow(.7,v*e);let cum3=0,r4=Math.random();for(let j=0;j<5;j++){cum3+=Math.pow(.7,j*e)/d;if(r4<=cum3)return{type:'point',j};}return{type:'point',j:0};}
 }
 
-// CORRECTION : qi somme a (1-rho) et qj somme a rho.
-// Pour que sum_rewards P(reward) = 1, on normalise qi par (1-rho) et qj par rho
-// avant d'appliquer les poids 0.75 et 0.25.
-// Verification : pc + sum_i (qi/(1-r))*0.75*(1-pc) + sum_j (qj/r)*0.25*(1-pc)
-//             = pc + 0.75*(1-pc)*sum_i(qi)/(1-r) + 0.25*(1-pc)*sum_j(qj)/r
-//             = pc + 0.75*(1-pc) + 0.25*(1-pc) = 1 ok
-function pReward(rew,nzState,l){
-  const pc=pCarte(nzState);
-  const r=rh(l);
-  if(rew.type==='carte'){
-    return nzState[rew.z]>0?wz[rew.z]/nzState[rew.z]:0;
-  } else if(rew.type==='piece'){
-    const qiSum=1-r;
-    return qiSum>0?(qi(rew.i,l)/qiSum)*0.75*(1-pc):0;
+function computeSL(){
+  const S=[SLP.s0,SLP.s1];
+  for(let l=0;l<=98;l++){const r=SLP.ri-(SLP.ri-SLP.r0)*Math.exp(-SLP.tau*l);S.push(S[l+1]+r*S[l]);}
+  return S;
+}
+
+// ── MATHS ÉCONOMIE CARTE ──
+function statN(n){return Math.floor(100*Math.pow(EP.alpha,Math.pow(n,EP.delta)))/100;}
+function statNscaled(n,s1){return Math.floor(s1*Math.pow(EP.alpha,Math.pow(n,EP.delta))*10)/10;}
+function coutMargPts(n,mPt){return mPt*EP.cp*Math.exp(EP.beta*Math.sqrt(n));}
+function coutMargPc(n,mPc){return mPc*EP.cc*Math.exp(EP.beta*Math.sqrt(n));}
+function coutCumPts(n,mPt){let s=0;for(let k=1;k<=n;k++)s+=coutMargPts(k,mPt);return s;}
+function coutCumPc(n,mPc){let s=0;for(let k=1;k<=n;k++)s+=coutMargPc(k,mPc);return s;}
+function rendement(n,s1,mPt){
+  const ds=statNscaled(n,s1)-statNscaled(n-1,s1);
+  const c=coutMargPts(n,mPt);
+  return c>0?ds/c:0;
+}
+
+// ── MATHS COURS NG (avec prix v10) ──
+function computeNG(){
+  const S=computeSL();
+  const ngs=[];
+  for(let ng=1;ng<=20;ng++){
+    const l0=5*(ng-1),l1=Math.min(5*ng-1,100);
+    let fp=0,fpt=0,rhoSum=0,kbarSum=0,cnt=0;
+    for(let l=l0;l<=l1;l++){
+      const cmoy=S[l]/eXi(l);
+      fp+=ePieces(l)*cmoy;
+      fpt+=ePoints(l)*cmoy;
+      rhoSum+=rh(l);kbarSum+=kBar(l);cnt++;
+    }
+    const taux=fpt>0?fp/fpt:0;
+    const prix=PRIX_BOUTIQUE_NG[ng-1]; // prix v10
+    ngs.push({ng,l0,l1,fp,fpt,taux,prix,rhoMoy:rhoSum/cnt,kbarMoy:kbarSum/cnt});
+  }
+  return ngs;
+}
+
+// ── BOUTIQUE LOGIQUE ──
+// Génère un item aléatoire pour la boutique (selon les probabilités du jeu)
+function genBoutItem(l,ng){
+  const nzs={...nz};
+  const pc=pCnz(nzs),pp=0.75*(1-pc),po=0.25*(1-pc);
+  const r=Math.random();
+  const prix=prixBoutiqueNG(ng);
+  if(r<pc){
+    // Carte aléatoire selon prob
+    let cum=0,r2=Math.random()*pc;
+    for(const z of R){
+      if(nzs[z]>0){cum+=wz[z]/nzs[z];if(r2<=cum){
+        const ri=RARITY_KEYS.indexOf(z);
+        const prixCarte=floor5(prix*RARITY_MULT_BOUT[ri]);
+        return{type:'carte',z,ri,nom:RL[z],prix:prixCarte,limite:1,achete:0};
+      }}
+    }
+    return{type:'carte',z:'c',ri:0,nom:'Commune',prix:floor5(prix*RARITY_MULT_BOUT[0]),limite:1,achete:0};
+  } else if(r<pc+po){
+    // Points (on choisit une quantité selon qj)
+    const e=1-rh(l);let d=0;for(let v=0;v<5;v++)d+=Math.pow(.7,v*e);
+    let cum3=0,r4=Math.random();
+    for(let j=0;j<5;j++){cum3+=Math.pow(.7,j*e)/d;if(r4<=cum3){
+      const val=vPoints[j];
+      return{type:'point',val,nom:`${val} pt${val>1?'s':''}`,prix:floor5(prix),limite:BOUT_JOUR_LIMITE_PTS,achete:0};
+    }}
+    return{type:'point',val:1,nom:'1 pt',prix:floor5(prix),limite:BOUT_JOUR_LIMITE_PTS,achete:0};
   } else {
-    const qjSum=r;
-    return qjSum>0?(qj(rew.j,l)/qjSum)*0.25*(1-pc):0;
+    // Pièces (on choisit une valeur selon qi)
+    const e=1-rh(l);let d=0;for(let u=0;u<4;u++)d+=Math.pow(.7,u*e);
+    let cum2=0,r3=Math.random();
+    for(let i=0;i<4;i++){cum2+=Math.pow(.7,i*e)/d;if(r3<=cum2){
+      const val=vPieces[i];
+      // Les pièces sont gratuites en boutique journalière (c'est une récompense)
+      return{type:'piece',val,nom:`${val} pièces`,prix:0,limite:1,achete:0};
+    }}
+    return{type:'piece',val:25,nom:'25 pièces',prix:0,limite:1,achete:0};
   }
 }
 
-function applyReward(rew,nzState){
-  const ns={...nzState};
-  if(rew.type==='carte'&&ns[rew.z]>0) ns[rew.z]--;
-  return ns;
+// Génère l'article cadeau gratuit (même logique mais peut être piece)
+function genCadeauItem(l,ng){
+  return genBoutItem(l,ng);
 }
 
-function rewLabel(rew){
-  if(rew.type==='carte') return `<span class="seq-slot carte"><span class="${RCLS[rew.z]}">Carte ${RL[rew.z]} Aléatoire</span></span>`;
-  if(rew.type==='piece') return `<span class="seq-slot piece">Pièce rang ${rew.i+1}</span>`;
-  return `<span class="seq-slot point">Point rang ${rew.j+1}</span>`;
-}
-
-function buildRewards(nzState){
-  const rews=[];
-  R.forEach(z=>{if(nzState[z]>0)rews.push({type:'carte',z});});
-  for(let i=0;i<4;i++)rews.push({type:'piece',i});
-  for(let j=0;j<5;j++)rews.push({type:'point',j});
-  return rews;
-}
-
-function topSequences(k,l,nzInit,topN){
-  let beam=[{prob:1,nzState:{...nzInit},seq:[]}];
-  for(let s=0;s<k;s++){
-    const next=[];
-    for(const node of beam){
-      const rews=buildRewards(node.nzState);
-      for(const rew of rews){
-        const p=pReward(rew,node.nzState,l);
-        if(p<=0)continue;
-        next.push({prob:node.prob*p,nzState:applyReward(rew,node.nzState),seq:[...node.seq,rew]});
-      }
+// Initialise les articles journaliers
+function boutInitJour(){
+  const l=SIM.l,ng=ngCourant();
+  BOUT.jour_cadeauReclame=false;
+  BOUT.jour_pointsAchetes=0;
+  // Générer le cadeau gratuit
+  BOUT.cadeauItem=genCadeauItem(l,ng);
+  // Générer 5 articles payants (points ou cartes uniquement)
+  BOUT.items=[];
+  for(let i=0;i<5;i++){
+    // Forcer uniquement cartes ou points pour les articles payants (pas de pièces gratuites)
+    let item;
+    let tries=0;
+    do{
+      item=genBoutItem(l,ng);
+      tries++;
+    }while(item.type==='piece'&&item.prix===0&&tries<20);
+    if(item.type==='piece'){
+      // Convertir en point si on tombe encore sur des pièces
+      const prix=prixBoutiqueNG(ng);
+      item={type:'point',val:1,nom:'1 pt',prix:floor5(prix),limite:BOUT_JOUR_LIMITE_PTS,achete:0};
     }
-    next.sort((a,b)=>b.prob-a.prob);
-    beam=next.slice(0,topN*20);
+    BOUT.items.push(item);
   }
-  beam.sort((a,b)=>b.prob-a.prob);
-  return beam.slice(0,topN);
 }
 
-function normCheck(k,l,nzInit){
-  let total=0;
-  function go(s,nzState,prob){
-    if(s===k){total+=prob;return;}
-    const rews=buildRewards(nzState);
-    for(const rew of rews){
-      const p=pReward(rew,nzState,l);
-      if(p<=0)continue;
-      go(s+1,applyReward(rew,nzState),prob*p);
+function boutRelance(){
+  if(BOUT.relancesRestantes<=0){boutNotif('Plus de relances disponibles cette semaine !','#ff453a');return;}
+  BOUT.relancesRestantes--;
+  const l=SIM.l,ng=ngCourant();
+  // Ne relance PAS le cadeau gratuit
+  BOUT.items=[];
+  for(let i=0;i<5;i++){
+    let item,tries=0;
+    do{item=genBoutItem(l,ng);tries++;}while(item.type==='piece'&&item.prix===0&&tries<20);
+    if(item.type==='piece'){
+      const prix=prixBoutiqueNG(ng);
+      item={type:'point',val:1,nom:'1 pt',prix:floor5(prix),limite:BOUT_JOUR_LIMITE_PTS,achete:0};
+    }
+    BOUT.items.push(item);
+  }
+  boutNotif(`Articles relancés ! (${BOUT.relancesRestantes} relance${BOUT.relancesRestantes!==1?'s':''} restante${BOUT.relancesRestantes!==1?'s':''})`, '#ffd60a');
+  renderBoutique();
+}
+
+function boutNextDay(){
+  BOUT.jour++;
+  // Reset journalier
+  BOUT.jour_cadeauReclame=false;
+  BOUT.jour_pointsAchetes=0;
+  boutInitJour();
+  // Check reset relances (tous les 7 jours)
+  if(BOUT.jour>=BOUT.prochainResetRelances){
+    BOUT.relancesRestantes=3;
+    BOUT.prochainResetRelances=BOUT.jour+7;
+  }
+  boutNotif(`Jour ${BOUT.jour} — Nouveaux articles disponibles !`,'#30d158');
+  renderBoutique();
+}
+
+function boutResetSaison(){
+  BOUT.sai_pointsAchetes=0;
+  boutNotif('Nouvelle saison ! Limite saisonnière réinitialisée.','#bf5af2');
+  renderBoutique();
+}
+
+function boutNotif(msg,color){
+  const el=document.getElementById('bout-notif');
+  if(!el)return;
+  el.style.display='block';
+  el.style.color=color||'#30d158';
+  el.style.borderColor=color||'#30d158';
+  el.style.background=color==='#ff453a'?'#2a0d0d':color==='#ffd60a'?'#2a2a0d':color==='#bf5af2'?'#1a0d2a':'#0d2a0d';
+  el.textContent=msg;
+  clearTimeout(boutNotif._t);
+  boutNotif._t=setTimeout(()=>{el.style.display='none';},3000);
+}
+
+// Achat article constants
+function boutAchatCST(pts){
+  const ng=ngCourant(),prix=prixBoutiqueNG(ng);
+  const restant=BOUT_CST_LIMITE-BOUT.cst_pointsAchetes;
+  const aAcheter=Math.min(pts,restant);
+  if(aAcheter<=0){boutNotif('Limite permanente atteinte.','#ff453a');return;}
+  const cout=aAcheter*prix;
+  if(SIM.pieces<cout){boutNotif(`Pièces insuffisantes (manque ${cout-SIM.pieces}p).`,'#ff453a');return;}
+  SIM.pieces-=cout;
+  SIM.points+=aAcheter;
+  BOUT.cst_pointsAchetes+=aAcheter;
+  BOUT.stats.totalAchatsCST+=aAcheter;
+  BOUT.stats.totalPiecesDepensees+=cout;
+  BOUT.stats.totalPointsRecus+=aAcheter;
+  enregistreStatNG(ng,{pts:aAcheter,pieces:0,cartes:0});
+  boutNotif(`+${aAcheter} points (−${cout}p)`, '#30d158');
+  renderSimStats();
+  renderBoutique();
+}
+
+// Achat article saisonniers
+function boutAchatSAI(pts){
+  const ng=ngCourant(),prix=prixBoutiqueNG(ng);
+  const restant=BOUT_SAI_LIMITE-BOUT.sai_pointsAchetes;
+  const aAcheter=Math.min(pts,restant);
+  if(aAcheter<=0){boutNotif('Limite saisonnière atteinte.','#ff453a');return;}
+  const cout=aAcheter*prix;
+  if(SIM.pieces<cout){boutNotif(`Pièces insuffisantes.`,'#ff453a');return;}
+  SIM.pieces-=cout;
+  SIM.points+=aAcheter;
+  BOUT.sai_pointsAchetes+=aAcheter;
+  BOUT.stats.totalAchatsSAI+=aAcheter;
+  BOUT.stats.totalPiecesDepensees+=cout;
+  BOUT.stats.totalPointsRecus+=aAcheter;
+  enregistreStatNG(ng,{pts:aAcheter,pieces:0,cartes:0});
+  boutNotif(`+${aAcheter} points saisonniers (−${cout}p)`, '#bf5af2');
+  renderSimStats();
+  renderBoutique();
+}
+
+// Réclame le cadeau gratuit
+function boutReclamerCadeau(){
+  if(BOUT.jour_cadeauReclame){boutNotif('Cadeau déjà réclamé aujourd\'hui.','#ff453a');return;}
+  const item=BOUT.cadeauItem;
+  const ng=ngCourant();
+  if(!item)return;
+  BOUT.jour_cadeauReclame=true;
+  BOUT.stats.totalCadeaux++;
+  if(item.type==='point'){
+    SIM.points+=item.val;
+    BOUT.stats.totalCadeau_pts+=item.val;
+    BOUT.stats.totalPointsRecus+=item.val;
+    enregistreStatNG(ng,{pts:item.val,pieces:0,cartes:0});
+    boutNotif(`Cadeau : +${item.val} pt${item.val>1?'s':''}`, '#30d158');
+  } else if(item.type==='piece'){
+    SIM.pieces+=item.val;
+    BOUT.stats.totalCadeau_pieces+=item.val;
+    enregistreStatNG(ng,{pts:0,pieces:item.val,cartes:0});
+    boutNotif(`Cadeau : +${item.val} pièces`, '#ffd60a');
+  } else if(item.type==='carte'){
+    SIM.cartes++;
+    BOUT.stats.totalCadeau_cartes++;
+    BOUT.stats.totalCartesRecues++;
+    enregistreStatNG(ng,{pts:0,pieces:0,cartes:1});
+    boutNotif(`Cadeau : ${RL[item.z]} débloquée !`, '#5ac8fa');
+  }
+  renderSimStats();
+  renderBoutique();
+}
+
+// Achat article journalier payant
+function boutAchatItem(idx){
+  if(idx<0||idx>=BOUT.items.length)return;
+  const item=BOUT.items[idx];
+  const ng=ngCourant();
+  if(item.type==='carte'){
+    if(item.achete>=item.limite){boutNotif('Limite atteinte pour cet article.','#ff453a');return;}
+    if(SIM.pieces<item.prix){boutNotif(`Pièces insuffisantes.`,'#ff453a');return;}
+    SIM.pieces-=item.prix;
+    SIM.cartes++;
+    item.achete++;
+    BOUT.stats.totalAchatsJour++;
+    BOUT.stats.totalPiecesDepensees+=item.prix;
+    BOUT.stats.totalCartesRecues++;
+    enregistreStatNG(ng,{pts:0,pieces:0,cartes:1});
+    boutNotif(`${RL[item.z]} achetée (−${item.prix}p)`, '#5ac8fa');
+  } else if(item.type==='point'){
+    const restant=item.limite-item.achete;
+    if(restant<=0){boutNotif('Limite atteinte.','#ff453a');return;}
+    if(SIM.pieces<item.prix){boutNotif(`Pièces insuffisantes.`,'#ff453a');return;}
+    SIM.pieces-=item.prix;
+    SIM.points+=item.val;
+    item.achete+=item.val;
+    BOUT.stats.totalAchatsJour++;
+    BOUT.stats.totalPiecesDepensees+=item.prix;
+    BOUT.stats.totalPointsRecus+=item.val;
+    enregistreStatNG(ng,{pts:item.val,pieces:0,cartes:0});
+    boutNotif(`+${item.val} point${item.val>1?'s':''} (−${item.prix}p)`, '#bf5af2');
+  }
+  renderSimStats();
+  renderBoutique();
+}
+
+function enregistreStatNG(ng,{pts,pieces,cartes}){
+  if(!BOUT.stats.parNG[ng])BOUT.stats.parNG[ng]={pts:0,pieces:0,cartes:0};
+  BOUT.stats.parNG[ng].pts+=pts;
+  BOUT.stats.parNG[ng].pieces+=pieces;
+  BOUT.stats.parNG[ng].cartes+=cartes;
+}
+
+function boutReset(){
+  BOUT={
+    jour:1,relancesRestantes:3,prochainResetRelances:7,
+    cst_pointsAchetes:0,sai_pointsAchetes:0,
+    jour_cadeauReclame:false,jour_pointsAchetes:0,
+    items:[],cadeauItem:null,
+    stats:{totalCadeaux:0,totalAchatsCST:0,totalAchatsSAI:0,totalAchatsJour:0,
+      totalPiecesDepensees:0,totalPointsRecus:0,totalCartesRecues:0,
+      totalCadeau_pts:0,totalCadeau_pieces:0,totalCadeau_cartes:0,parNG:{}}
+  };
+  boutInitJour();
+}
+
+function renderBoutique(){
+  const ng=ngCourant();
+  const prix=prixBoutiqueNG(ng);
+  // Header
+  const jEl=document.getElementById('bout-jour');if(jEl)jEl.textContent=BOUT.jour;
+  const ngEl=document.getElementById('bout-ng');if(ngEl)ngEl.textContent=ng;
+  const ngPEl=document.getElementById('bout-ng-prix');if(ngPEl)ngPEl.textContent=`${prix} p/pt`;
+  const rcEl=document.getElementById('relance-count');if(rcEl)rcEl.textContent=BOUT.relancesRestantes;
+  const rrEl=document.getElementById('relance-reset-in');if(rrEl)rrEl.textContent=Math.max(0,BOUT.prochainResetRelances-BOUT.jour);
+  const brtEl=document.getElementById('btn-relance-txt');if(brtEl)brtEl.textContent=BOUT.relancesRestantes;
+  const btnR=document.getElementById('btn-relance');
+  if(btnR){btnR.className=BOUT.relancesRestantes>0?'':'';btnR.style.opacity=BOUT.relancesRestantes>0?'1':'0.4';btnR.style.cursor=BOUT.relancesRestantes>0?'pointer':'not-allowed';}
+
+  // CONSTANTS
+  const cstGrid=document.getElementById('bout-const-grid');
+  if(cstGrid){
+    const resteCST=BOUT_CST_LIMITE-BOUT.cst_pointsAchetes;
+    const coutCST5=5*prix,coutCST10=10*prix;
+    cstGrid.innerHTML=`
+    <div class="bout-card const-card">
+      <span class="bout-tag const">Permanent</span>
+      <div class="bout-item-name">+5 Points</div>
+      <div class="bout-item-sub">Boost de début de jeu</div>
+      <div class="bout-item-prix">${coutCST5} pièces</div>
+      <div class="bout-item-limite">${resteCST}/${BOUT_CST_LIMITE} pts restants</div>
+      <button class="bout-btn ${resteCST>=5&&SIM.pieces>=coutCST5?'buy':'disabled'}" onclick="boutAchatCST(5)">Acheter 5 pts</button>
+    </div>
+    <div class="bout-card const-card">
+      <span class="bout-tag const">Permanent</span>
+      <div class="bout-item-name">+10 Points</div>
+      <div class="bout-item-sub">Limite : ${BOUT_CST_LIMITE} pts cumulatifs</div>
+      <div class="bout-item-prix">${coutCST10} pièces</div>
+      <div class="bout-item-limite">${resteCST}/${BOUT_CST_LIMITE} pts restants · ${SIM.pieces.toLocaleString()} p dispo</div>
+      <button class="bout-btn ${resteCST>=10&&SIM.pieces>=coutCST10?'buy':'disabled'}" onclick="boutAchatCST(10)">Acheter 10 pts</button>
+    </div>`;
+  }
+
+  // SAISONNIERS
+  const saiGrid=document.getElementById('bout-saison-grid');
+  if(saiGrid){
+    const resteSAI=BOUT_SAI_LIMITE-BOUT.sai_pointsAchetes;
+    const coutSAI20=20*prix,coutSAI50=50*prix;
+    saiGrid.innerHTML=`
+    <div class="bout-card saison-card">
+      <span class="bout-tag saison">Saisonnier</span>
+      <div class="bout-item-name">+20 Points</div>
+      <div class="bout-item-sub">Renouvellement par saison</div>
+      <div class="bout-item-prix">${coutSAI20} pièces</div>
+      <div class="bout-item-limite">${resteSAI}/${BOUT_SAI_LIMITE} pts restants</div>
+      <button class="bout-btn ${resteSAI>=20&&SIM.pieces>=coutSAI20?'buy':'disabled'}" onclick="boutAchatSAI(20)">Acheter 20 pts</button>
+    </div>
+    <div class="bout-card saison-card">
+      <span class="bout-tag saison">Saisonnier</span>
+      <div class="bout-item-name">+50 Points</div>
+      <div class="bout-item-sub">Limite : ${BOUT_SAI_LIMITE} pts / saison</div>
+      <div class="bout-item-prix">${coutSAI50} pièces</div>
+      <div class="bout-item-limite">${resteSAI}/${BOUT_SAI_LIMITE} pts restants · ${SIM.pieces.toLocaleString()} p dispo</div>
+      <button class="bout-btn ${resteSAI>=50&&SIM.pieces>=coutSAI50?'buy':'disabled'}" onclick="boutAchatSAI(50)">Acheter 50 pts</button>
+    </div>`;
+  }
+
+  // JOURNALIERS
+  const jourGrid=document.getElementById('bout-jour-grid');
+  if(!jourGrid)return;
+  let html='';
+  // Cadeau gratuit
+  const cd=BOUT.cadeauItem;
+  if(cd){
+    const cdColor=cd.type==='carte'?RC[cd.z]||'#5ac8fa':cd.type==='point'?'#bf5af2':'#ffd60a';
+    const cdNom=cd.type==='carte'?`Carte ${RL[cd.z]}`:cd.type==='point'?`${cd.val} pt${cd.val>1?'s':''}`:cd.nom;
+    html+=`<div class="bout-card free ${BOUT.jour_cadeauReclame?'claimed':''}">
+      <span class="bout-tag free">Cadeau gratuit</span>
+      <div class="bout-item-name" style="color:${cdColor};">${cdNom}</div>
+      <div class="bout-item-sub">${BOUT.jour_cadeauReclame?'Déjà réclamé aujourd\'hui':'Disponible une fois par jour'}</div>
+      <div class="bout-item-prix" style="color:#30d158;">GRATUIT</div>
+      <button class="bout-btn free ${BOUT.jour_cadeauReclame?'disabled':''}" onclick="boutReclamerCadeau()">
+        ${BOUT.jour_cadeauReclame?'Réclamé ✓':'Réclamer'}
+      </button>
+    </div>`;
+  }
+  // Achat direct points
+  const jourPrixPt=prix;
+  const resteJourPts=BOUT_JOUR_LIMITE_PTS-BOUT.jour_pointsAchetes;
+  html+=`<div class="bout-card jour-card">
+    <span class="bout-tag jour">Journalier</span>
+    <div class="bout-item-name">+5 Points</div>
+    <div class="bout-item-sub">Achat direct (taux NG courant)</div>
+    <div class="bout-item-prix">${5*jourPrixPt} pièces</div>
+    <div class="bout-item-limite">${resteJourPts}/${BOUT_JOUR_LIMITE_PTS} pts restants</div>
+    <button class="bout-btn ${resteJourPts>=5&&SIM.pieces>=5*jourPrixPt?'buy':'disabled'}" onclick="boutAchatJourPts(5)">Acheter 5 pts</button>
+  </div>`;
+  // 5 articles aléatoires
+  BOUT.items.forEach((item,idx)=>{
+    const iColor=item.type==='carte'?RC[item.z]||'#5ac8fa':'#bf5af2';
+    const restant=item.limite-item.achete;
+    const canBuy=restant>0&&SIM.pieces>=item.prix&&item.prix>0;
+    const limTxt=item.type==='carte'?`Limite : 1`:`${restant}/${item.limite} pts restants`;
+    html+=`<div class="bout-card jour-card ${restant<=0?'sold-out':''}">
+      <span class="bout-tag jour">Journalier</span>
+      <div class="bout-item-name" style="color:${iColor};">${item.nom}</div>
+      <div class="bout-item-sub">${item.type==='carte'?`Rareté ${RL[item.z]}`:'Points'}</div>
+      <div class="bout-item-prix">${item.prix} pièces</div>
+      <div class="bout-item-limite">${limTxt}</div>
+      <button class="bout-btn ${canBuy?'buy':'disabled'}" onclick="boutAchatItem(${idx})">
+        ${restant<=0?'Épuisé':'Acheter'}
+      </button>
+    </div>`;
+  });
+  jourGrid.innerHTML=html;
+
+  // Stats boutique
+  const sg=document.getElementById('bout-stats-grid');
+  if(sg){
+    const st=BOUT.stats;
+    const totalRec=st.totalCadeaux+st.totalAchatsCST+st.totalAchatsSAI+st.totalAchatsJour;
+    sg.innerHTML=[
+      `<div class="mc"><div class="ml">Jours joués</div><div class="mv" style="color:#5ac8fa;">${BOUT.jour}</div></div>`,
+      `<div class="mc"><div class="ml">Cadeaux réclamés</div><div class="mv" style="color:#30d158;">${st.totalCadeaux}</div></div>`,
+      `<div class="mc"><div class="ml">Pts achetés (CST)</div><div class="mv" style="color:#378ADD;">${st.totalAchatsCST}</div></div>`,
+      `<div class="mc"><div class="ml">Pts achetés (SAI)</div><div class="mv" style="color:#bf5af2;">${st.totalAchatsSAI}</div></div>`,
+      `<div class="mc"><div class="ml">Pièces dépensées</div><div class="mv" style="color:#ffd60a;">${st.totalPiecesDepensees.toLocaleString()}</div></div>`,
+      `<div class="mc"><div class="ml">Points reçus total</div><div class="mv" style="color:#bf5af2;">${st.totalPointsRecus}</div></div>`,
+      `<div class="mc"><div class="ml">Cartes reçues</div><div class="mv" style="color:#5ac8fa;">${st.totalCartesRecues}</div></div>`,
+    ].join('');
+  }
+}
+
+function boutAchatJourPts(pts){
+  const ng=ngCourant(),prix=prixBoutiqueNG(ng);
+  const restant=BOUT_JOUR_LIMITE_PTS-BOUT.jour_pointsAchetes;
+  const aAcheter=Math.min(pts,restant);
+  if(aAcheter<=0){boutNotif('Limite journalière points atteinte.','#ff453a');return;}
+  const cout=aAcheter*prix;
+  if(SIM.pieces<cout){boutNotif(`Pièces insuffisantes.`,'#ff453a');return;}
+  SIM.pieces-=cout;
+  SIM.points+=aAcheter;
+  BOUT.jour_pointsAchetes+=aAcheter;
+  BOUT.stats.totalAchatsJour++;
+  BOUT.stats.totalPiecesDepensees+=cout;
+  BOUT.stats.totalPointsRecus+=aAcheter;
+  enregistreStatNG(ng,{pts:aAcheter,pieces:0,cartes:0});
+  boutNotif(`+${aAcheter} points (−${cout}p)`, '#bf5af2');
+  renderSimStats();
+  renderBoutique();
+}
+
+// ── SIMULATEUR ──
+function openOneCoffre(doLog){
+  const l=SIM.l;if(l>=100)return null;
+  const S=computeSL(),seuil=S[l];
+  const xi=sampleXi(l),k=sampleK(l);
+  const slots=[],nzTemp={...SIM.nzSim};
+  for(let s=0;s<k;s++){const slot=sampleSlot(l,nzTemp);slots.push(slot);if(slot.type==='carte'&&nzTemp[slot.z]>0)nzTemp[slot.z]--;}
+  SIM.nzSim={...nzTemp};
+  SIM.xpTotal+=xi;SIM.xpNiveau+=xi;SIM.coffres++;SIM.coffresNiveau++;
+  let piecesC=0,pointsC=0,cartesC=0;
+  slots.forEach(slot=>{SIM.recompenses++;
+    if(slot.type==='piece'){const v=vPieces[slot.i];SIM.pieces+=v;SIM.piecesNiveau+=v;piecesC+=v;}
+    else if(slot.type==='point'){const v=vPoints[slot.j];SIM.points+=v;SIM.pointsNiveau+=v;pointsC+=v;}
+    else{SIM.cartes++;cartesC++;}
+  });
+  if(doLog){
+    const log=document.getElementById('reward-log');
+    const xi_el=document.createElement('div');xi_el.className='reward-item xp';
+    xi_el.innerHTML=`<span>☀ XP +${xi}</span><span>Coffre #${SIM.coffres} — k=${k}</span>`;log.prepend(xi_el);
+    [...slots].reverse().forEach(slot=>{const el=document.createElement('div');
+      if(slot.type==='piece'){el.className='reward-item piece';el.innerHTML=`<span>🪙 ${vPieces[slot.i]} pièces</span>`;}
+      else if(slot.type==='point'){el.className='reward-item point';el.innerHTML=`<span>⭐ ${vPoints[slot.j]} pt</span>`;}
+      else{el.className='reward-item carte';el.innerHTML=`<span>🃏 ${RL[slot.z]}</span>`;}
+      log.prepend(el);
+    });
+    document.getElementById('sim-coffre-info').textContent=`Coffre #${SIM.coffres} — XP:+${xi} k=${k} [${piecesC?'+'+piecesC+'p ':''}${pointsC?'+'+pointsC+'pt ':''}${cartesC?cartesC+'🃏':''}]`;
+  }
+  if(SIM.xpNiveau>=seuil){
+    SIM.niveaux.push({l:SIM.l,S:seuil,coffres:SIM.coffresNiveau,xp:SIM.xpNiveau,pieces:SIM.piecesNiveau,points:SIM.pointsNiveau});
+    SIM.l++;SIM.xpNiveau=Math.max(0,SIM.xpNiveau-seuil);SIM.coffresNiveau=0;SIM.piecesNiveau=0;SIM.pointsNiveau=0;
+    // Mettre à jour la boutique si on change de NG
+    if(SIM.l%5===0&&at==='bout')renderBoutique();
+  }
+  return true;
+}
+function simOpen(){if(SIM.l>=100){alert('l=100 atteint.');return;}openOneCoffre(true);renderSimStats();renderSimTable();}
+function simReset(){
+  SIM={l:0,xpTotal:0,xpNiveau:0,coffres:0,pieces:0,points:0,cartes:0,recompenses:0,
+    nzSim:{...nz},niveaux:[],coffresNiveau:0,piecesNiveau:0,pointsNiveau:0};
+  const log=document.getElementById('reward-log');if(log)log.innerHTML='';
+  const info=document.getElementById('sim-coffre-info');if(info)info.textContent='';
+  boutReset();
+  renderSimStats();renderSimTable();
+  if(at==='bout')renderBoutique();
+}
+function renderSimStats(){
+  const l=SIM.l,S=computeSL(),seuil=l<100?S[l]:null;
+  document.getElementById('ss-l').textContent=l;
+  document.getElementById('ss-xp').textContent=SIM.xpTotal.toLocaleString();
+  document.getElementById('ss-xpnext').textContent=seuil?`${Math.round(SIM.xpNiveau)} / ${Math.round(seuil)}`:'MAX';
+  document.getElementById('ss-cof').textContent=SIM.coffres;
+  document.getElementById('ss-pieces').textContent=SIM.pieces.toLocaleString();
+  document.getElementById('ss-points').textContent=SIM.points;
+  document.getElementById('ss-cartes').textContent=SIM.cartes;
+  document.getElementById('ss-rew').textContent=SIM.recompenses;
+}
+function renderSimTable(){
+  const tbody=document.getElementById('sim-tbody');if(!tbody)return;
+  tbody.innerHTML=SIM.niveaux.map((n,i)=>`<tr class="${i===SIM.niveaux.length-1?'cur':''}">
+    <td>l=${n.l}</td><td>${Math.round(n.S).toLocaleString()}</td><td>${n.coffres}</td>
+    <td>${n.xp.toFixed(0)}</td><td>${n.pieces.toLocaleString()}</td><td>${n.points}</td>
+    <td>${n.points>0?(n.pieces/n.points).toFixed(2):'—'}</td></tr>`).join('');
+  if(SIM.niveaux.length>0){
+    const tS=SIM.niveaux.reduce((a,n)=>a+n.S,0),tC=SIM.niveaux.reduce((a,n)=>a+n.coffres,0),
+      tX=SIM.niveaux.reduce((a,n)=>a+n.xp,0),tP=SIM.niveaux.reduce((a,n)=>a+n.pieces,0),
+      tPt=SIM.niveaux.reduce((a,n)=>a+n.points,0);
+    const rat=SIM.niveaux.filter(n=>n.points>0).map(n=>n.pieces/n.points);
+    document.getElementById('tf-s').textContent=Math.round(tS).toLocaleString();
+    document.getElementById('tf-c').textContent=tC;document.getElementById('tf-x').textContent=tX.toFixed(0);
+    document.getElementById('tf-p').textContent=tP.toLocaleString();document.getElementById('tf-pt').textContent=tPt;
+    document.getElementById('tf-r').textContent=rat.length>0?(rat.reduce((a,b)=>a+b,0)/rat.length).toFixed(2)+' moy':'—';
+  } else {['tf-s','tf-c','tf-x','tf-p','tf-pt','tf-r'].forEach(id=>{document.getElementById(id).textContent='—';});}
+}
+
+function savePartie(){
+  if(SIM.niveaux.length===0&&SIM.coffres===0){alert('Aucune donnée.');return;}
+  const id=HISTORIQUE.length+1,now=new Date();
+  // Snapshot boutique stats
+  const boutSnapshot={
+    jours:BOUT.jour,
+    totalCadeaux:BOUT.stats.totalCadeaux,
+    totalAchatsCST:BOUT.stats.totalAchatsCST,
+    totalAchatsSAI:BOUT.stats.totalAchatsSAI,
+    totalAchatsJour:BOUT.stats.totalAchatsJour,
+    totalPiecesDepensees:BOUT.stats.totalPiecesDepensees,
+    totalPointsRecus:BOUT.stats.totalPointsRecus,
+    totalCartesRecues:BOUT.stats.totalCartesRecues,
+    totalRec:BOUT.stats.totalCadeaux+BOUT.stats.totalAchatsCST+BOUT.stats.totalAchatsSAI+BOUT.stats.totalAchatsJour,
+    parNG:JSON.parse(JSON.stringify(BOUT.stats.parNG)),
+    partCartes:BOUT.stats.totalCartesRecues,
+    partPoints:BOUT.stats.totalPointsRecus,
+  };
+  HISTORIQUE.push({id,label:`Partie #${id} — ${now.toLocaleTimeString('fr-FR')}`,l:SIM.l,coffres:SIM.coffres,pieces:SIM.pieces,points:SIM.points,cartes:SIM.cartes,xpTotal:SIM.xpTotal,niveaux:SIM.niveaux.map(n=>({...n})),timestamp:now.toISOString(),boutique:boutSnapshot});
+  alert(`Partie #${id} enregistrée (boutique: ${BOUT.jour} jours, ${boutSnapshot.totalRec} achats/cadeaux).`);
+  if(at==='hi')renderHistorique();
+}
+function clearHistorique(){if(!confirm('Effacer tout?'))return;HISTORIQUE=[];renderHistorique();}
+
+// ── AUTO ──
+function uAutoUI(){const m=document.getElementById('auto-mode').value;document.getElementById('auto-pf-n').style.display=m==='n'?'':'none';document.getElementById('auto-pf-l').style.display=m==='l'?'':'none';}
+function autoStop(){autoRunning=false;document.getElementById('auto-btn-run').style.display='';document.getElementById('auto-btn-stop').style.display='none';renderSimStats();renderSimTable();}
+function autoRun(){
+  if(autoRunning)return;
+  const mode=document.getElementById('auto-mode').value,n=parseInt(document.getElementById('auto-n').value)||50,tL=parseInt(document.getElementById('auto-l').value)||5;
+  if(mode==='l'&&SIM.l>=tL){document.getElementById('auto-result').textContent=`Déjà à l=${SIM.l}.`;return;}
+  if(SIM.l>=100){document.getElementById('auto-result').textContent='Niveau max.';return;}
+  autoRunning=true;let done=0;
+  document.getElementById('auto-btn-run').style.display='none';document.getElementById('auto-btn-stop').style.display='';
+  document.getElementById('auto-progress').style.display='';document.getElementById('auto-result').textContent='';
+  function step(){
+    if(!autoRunning)return;
+    const batch=Math.min(100,mode==='n'?n-done:100);
+    for(let i=0;i<batch;i++){
+      if(!autoRunning)break;
+      if(mode==='n'){if(done>=n||SIM.l>=100){autoRunning=false;break;}openOneCoffre(false);done++;}
+      else{if(SIM.l>=tL||SIM.l>=100){autoRunning=false;break;}openOneCoffre(false);done++;}
+    }
+    const pct=mode==='n'?(done/n*100).toFixed(0):Math.min(100,SIM.l/tL*100).toFixed(0);
+    document.getElementById('auto-prog-fill').style.width=pct+'%';
+    document.getElementById('auto-prog-txt').textContent=mode==='n'?`${done}/${n} coffres (l=${SIM.l})`:`l=${SIM.l}/${tL} — ${done} coffres`;
+    if(autoRunning)requestAnimationFrame(step);
+    else{document.getElementById('auto-btn-run').style.display='';document.getElementById('auto-btn-stop').style.display='none';
+      document.getElementById('auto-result').textContent=(mode==='n'?`✓ ${done} coffres.`:`✓ l=${SIM.l} atteint en ${done} coffres.`)+(SIM.l>=100?' (max)':'');
+      renderSimStats();renderSimTable();}
+  }
+  requestAnimationFrame(step);
+}
+
+// ── HISTORIQUE ──
+let histChartMetric='xp';
+function setHistChart(m){histChartMetric=m;['xp','pieces','points','coffres'].forEach(k=>document.getElementById('hct-'+k).classList.toggle('on',k===m));renderHistChart();}
+function renderHistorique(){
+  const list=document.getElementById('hist-list');
+  if(HISTORIQUE.length===0){list.innerHTML='<div style="font-size:11px;color:#555;padding:5px;">Aucune partie.</div>';document.getElementById('hist-charts-sec').style.display='none';return;}
+  document.getElementById('hist-charts-sec').style.display='';
+  list.innerHTML=HISTORIQUE.map(p=>{
+    const an=p.niveaux.length>0;
+    const avgXp=an?(p.niveaux.reduce((a,n)=>a+n.xp,0)/p.niveaux.length).toFixed(0):'—';
+    const avgP=an?(p.niveaux.reduce((a,n)=>a+n.pieces,0)/p.niveaux.length).toFixed(0):'—';
+    const avgPt=an?(p.niveaux.reduce((a,n)=>a+n.points,0)/p.niveaux.length).toFixed(1):'—';
+    const bStats=p.boutique?`<div class="hstat"><span>Jours boutique</span><span style="color:#5ac8fa;">${p.boutique.jours}</span></div><div class="hstat"><span>Pts reçus</span><span style="color:#bf5af2;">${p.boutique.totalPointsRecus}</span></div><div class="hstat"><span>Cartes reçues</span><span style="color:#378ADD;">${p.boutique.totalCartesRecues}</span></div><div class="hstat"><span>Pièces dépensées</span><span style="color:#ffd60a;">${p.boutique.totalPiecesDepensees.toLocaleString()}</span></div>`:'';
+    return`<div class="hist-entry"><div><div style="font-size:12px;font-weight:500;">${p.label}</div><div class="hid">l=${p.l} · ${p.coffres} coffres · ${p.niveaux.length} niv.</div></div>
+    <div class="hstats">
+    <div class="hstat"><span>XP moy/niv</span><span style="color:#30d158;">${avgXp}</span></div>
+    <div class="hstat"><span>Pièces moy/niv</span><span style="color:#ffd60a;">${avgP}</span></div>
+    <div class="hstat"><span>Points moy/niv</span><span style="color:#bf5af2;">${avgPt}</span></div>
+    ${bStats}
+    </div></div>`;
+  }).join('');
+  renderHistChart();
+}
+function renderHistChart(){
+  if(HISTORIQUE.length===0)return;
+  const maxL=Math.max(...HISTORIQUE.map(p=>p.niveaux.length>0?p.niveaux[p.niveaux.length-1].l+1:0));
+  if(maxL===0)return;
+  const labels=[...Array(maxL).keys()].map(l=>'l='+l);
+  const metric=histChartMetric,means=[],counts=[];
+  for(let l=0;l<maxL;l++){let sum=0,cnt=0;for(const p of HISTORIQUE){const n=p.niveaux.find(n=>n.l===l);if(n){sum+=metric==='xp'?n.xp:metric==='pieces'?n.pieces:metric==='points'?n.points:n.coffres;cnt++;}}means.push(cnt>0?+(sum/cnt).toFixed(2):null);counts.push(cnt);}
+  const colors={xp:'#30d158',pieces:'#ffd60a',points:'#bf5af2',coffres:'#378ADD'};
+  if(CH['hist'])CH['hist'].destroy();
+  CH['hist']=new Chart(document.getElementById('hist-chart'),{type:'line',data:{labels,datasets:[{label:'',data:means,borderColor:colors[metric],backgroundColor:colors[metric]+'22',fill:true,pointRadius:2,tension:0.35,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{afterLabel:ctx=>`(${counts[ctx.dataIndex]} partie${counts[ctx.dataIndex]>1?'s':''})` }}},scales:{x:{ticks:{color:'#8e8e93',maxTicksLimit:15},grid:{color:'#1a1a1a'}},y:{ticks:{color:'#8e8e93'},grid:{color:'#1a1a1a'}}}}});
+  document.getElementById('hist-chart-info').textContent=`${HISTORIQUE.length} partie${HISTORIQUE.length>1?'s':''} — valeur null = niveau non atteint`;
+}
+
+// ── ÉCONOMIE ──
+let ecoTab='cours';
+function ET(t){
+  ecoTab=t;
+  ['cours','carte','couts'].forEach(id=>{document.getElementById('ep-'+id).style.display=id===t?'':'none';document.getElementById('etab-'+id).classList.toggle('on',id===t);});
+  if(t==='cours')uEcoCours();
+  else if(t==='carte')uEcoCarte();
+  else if(t==='couts')uEcoCouts();
+}
+function uEcoCours(){
+  const ngs=computeNG();
+  // Courbe prix boutique par l (en escalier)
+  const byL=[];
+  for(let l=0;l<=100;l++){const ng=Math.min(20,Math.floor(l/5)+1);byL.push({taux:ngs[ng-1].taux,prix:PRIX_BOUTIQUE_NG[ng-1]});}
+  const tbody=document.getElementById('ng-tbody');
+  tbody.innerHTML=ngs.map(ng=>{
+    const phase=ng.ng<=4?'#2a1a0d':ng.ng<=8?'#1a1a2a':ng.ng<=14?'#1a2a1a':'#1a1a1a';
+    return`<tr style="background:${phase};">
+      <td style="font-weight:600;">NG ${ng.ng}</td>
+      <td>l=${ng.l0}–${ng.l1}</td>
+      <td>${ng.fp.toFixed(0)}</td>
+      <td>${ng.fpt.toFixed(1)}</td>
+      <td>${ng.taux.toFixed(2)}</td>
+      <td style="font-weight:600;color:#ffd60a;">${PRIX_BOUTIQUE_NG[ng.ng-1]} p/pt</td>
+      <td>${(ng.rhoMoy*100).toFixed(1)}%</td>
+      <td>${ng.kbarMoy.toFixed(2)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('ng-note').textContent=
+    `Prix boutique v10 : décroissance stricte par paliers de 5 pièces/point — correction bottom-up pour NG 13-20. NG1=170→NG20=35 p/pt.`;
+  const lLabels=[...Array(101).keys()];
+  mk('c-taux','taux',{type:'line',data:{labels:lLabels,datasets:[
+    {data:byL.map(r=>+r.taux.toFixed(3)),borderColor:'#8e8e93',stepped:true,fill:false,pointRadius:0,borderWidth:1.5,borderDash:[4,2]},
+    {data:byL.map(r=>r.prix),borderColor:'#ffd60a',stepped:true,fill:false,pointRadius:0,borderWidth:2},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+    x:{ticks:{color:'#8e8e93',maxTicksLimit:20},grid:{color:'#1a1a1a'},title:{display:true,text:'l',color:'#555'}},
+    y:{ticks:{color:'#8e8e93'},grid:{color:'#1a1a1a'},title:{display:true,text:'pièces / point',color:'#555'}}
+  }}});
+  document.getElementById('taux-leg').innerHTML=leg([['Taux naturel (théorique)','#8e8e93'],['Prix boutique v10 (×5 strict)','#ffd60a']]);
+  const S=computeSL();
+  const lAll=[...Array(101).keys()];
+  const fpL=lAll.map(l=>Math.max(0.01,ePieces(l)*S[l]/eXi(l)));
+  const fptL=lAll.map(l=>Math.max(0.01,ePoints(l)*S[l]/eXi(l)));
+  mk('c-flux','flux',{type:'line',data:{labels:lAll,datasets:[
+    {data:fpL,borderColor:'#ffd60a',backgroundColor:'rgba(255,214,10,0.06)',fill:true,pointRadius:0,tension:0.2,borderWidth:2,yAxisID:'yp'},
+    {data:fptL,borderColor:'#bf5af2',backgroundColor:'rgba(191,90,242,0.06)',fill:true,pointRadius:0,tension:0.2,borderWidth:2,yAxisID:'ypt'},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+    x:{ticks:{color:'#8e8e93',maxTicksLimit:20},grid:{color:'#1a1a1a'},title:{display:true,text:'l',color:'#555'}},
+    yp:{type:'logarithmic',position:'left',ticks:{color:'#ffd60a',callback:v=>{if(v>=1e6)return(v/1e6).toFixed(1)+'M';if(v>=1000)return(v/1000).toFixed(0)+'k';return v.toFixed(0);}},grid:{color:'#1a1a1a'},title:{display:true,text:'Pièces / niv (log)',color:'#ffd60a'}},
+    ypt:{type:'logarithmic',position:'right',ticks:{color:'#bf5af2',callback:v=>{if(v>=1000)return(v/1000).toFixed(1)+'k';return v.toFixed(1);}},grid:{drawOnChartArea:false},title:{display:true,text:'Points / niv (log)',color:'#bf5af2'}},
+  }}});
+  document.getElementById('flux-leg').innerHTML=leg([['Flux pièces/niv (log)','#ffd60a'],['Flux points/niv (log)','#bf5af2']]);
+}
+
+function uEcoCarte(){
+  const ri=parseInt(document.getElementById('ec-rar').value)||0;
+  const s1=RARITY_STAT1[ri];
+  document.getElementById('ec-s1').value=s1;
+  const nmax=Math.min(2000,parseInt(document.getElementById('ec-nmax').value)||100);
+  const mPt=rarMultPt(ri),mPc=rarMultPc(ri);
+  const step=Math.max(1,Math.floor(nmax/150));
+  const ns=[],stats=[],coutsCumPt=[],coutsCumPc=[],rends=[];
+  let cumPt=0,cumPc=0,nextDisplay=1;
+  for(let n=1;n<=nmax;n++){
+    cumPt+=coutMargPts(n,mPt);
+    cumPc+=coutMargPc(n,mPc);
+    if(n===nextDisplay){
+      ns.push(n);stats.push(statNscaled(n,s1));
+      coutsCumPt.push(+cumPt.toFixed(2));coutsCumPc.push(+cumPc.toFixed(2));
+      rends.push(+(rendement(n,s1,mPt)*1000).toFixed(4));
+      nextDisplay+=step;
     }
   }
-  go(0,{...nzInit},1);
-  return total;
-}
-
-function mk(id,key,cfg){
-  if(CH[key])CH[key].destroy();
-  const el=document.getElementById(id);if(!el)return;
-  CH[key]=new Chart(el,cfg);
-}
-const cOpts=(extra={})=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},color:'#6a6865',...extra});
-const cScales=()=>({x:{ticks:{color:'#6a6865',font:{size:10}},grid:{color:'#1e1e22'}},y:{ticks:{color:'#6a6865',font:{size:10}},grid:{color:'#1e1e22'}}});
-
-function uDerived(){
-  const l=gL(),pc=pCarte(nz);
-  document.getElementById('dv').innerHTML=[
-    `<div class="mc"><div class="ml">Γ₋ / Γ₊</div><div class="mv">${Gm(l).toFixed(3)} / ${Gp(l).toFixed(3)}</div><div class="ms">${Gm(l)>Gp(l)?'petites XP':Gm(l)<Gp(l)?'grandes XP':'symétrique'}</div></div>`,
-    `<div class="mc"><div class="ml">XPmin / XPmax</div><div class="mv">${Xn(l)} / ${Xx(l)}</div></div>`,
-    `<div class="mc"><div class="ml">μ̄(l)</div><div class="mv">${mu(l).toFixed(3)}</div><div class="ms">∈ [1..10]</div></div>`,
-    `<div class="mc"><div class="ml">ψ(l)</div><div class="mv">${ps(l).toFixed(4)}</div></div>`,
-    `<div class="mc"><div class="ml">ρ(l)</div><div class="mv">${rh(l).toFixed(4)}</div></div>`,
-    `<div class="mc"><div class="ml">P(carte) initial</div><div class="mv">${(pc*100).toFixed(3)}%</div></div>`,
-  ].join('');
-}
-
-function uXi(){
-  const l=gL(),mn=Xn(l),mx=Xx(l);
-  const s=document.getElementById('xs');s.min=mn;s.max=mx;
-  let xi=parseInt(s.value);xi=Math.max(mn,Math.min(mx,xi));s.value=xi;
-  document.getElementById('xv').textContent=xi;
-  const p=pXi(xi,l),gm=Gm(l),gp=Gp(l);
-  document.getElementById('xr').innerHTML=`
-    <div class="tr"><span class="tl">Γ₋(l) = exp(γ(l₀−l))</span><span class="tv">${gm.toFixed(6)}</span></div>
-    <div class="tr"><span class="tl">Γ₊(l) = exp(γ(l−l₀))</span><span class="tv">${gp.toFixed(6)}</span></div>
-    <div class="tr"><span class="tl">Plage S_l</span><span class="tv">[${mn}..${mx}] → ${mx-mn+1} val.</span></div>
-    <div class="tr"><span class="tl" style="font-weight:600;">P(ξ=${xi})</span><span class="tv" style="color:var(--blue)">${(p*100).toFixed(5)}%</span></div>`;
-  document.getElementById('xn').textContent=gm>gp?'Γ₋>Γ₊ → mode petites XP (asymptote décroissante)':gm<gp?'Γ₊>Γ₋ → mode grandes XP (asymptote croissante)':'Γ₋=Γ₊=1 → distribution symétrique';
-  const st=Math.max(1,Math.floor((mx-mn)/80)),xL=[],xD=[];
-  for(let y=mn;y<=mx;y+=st){xL.push(y);xD.push(+(pXi(y,l)*100).toFixed(5));}
-  mk('cxp','xp',{type:'line',data:{labels:xL,datasets:[{data:xD,borderColor:'#8b7fff',backgroundColor:'rgba(139,127,255,0.07)',fill:true,pointRadius:0,tension:0.3}]},options:{...cOpts(),scales:{...cScales()}}});
-  const lv=[...Array(101).keys()];
-  mk('cgm','gm',{type:'line',data:{labels:lv,datasets:[
-    {data:lv.map(ll=>+Gm(ll).toFixed(4)),borderColor:'#ff9a3c',fill:false,pointRadius:0,tension:0.3},
-    {data:lv.map(ll=>+Gp(ll).toFixed(4)),borderColor:'#4a9eff',fill:false,pointRadius:0,tension:0.3},
-    {data:lv.map(()=>1),borderColor:'#3a3a42',borderDash:[4,3],pointRadius:0,fill:false},
-  ]},options:{...cOpts(),scales:{...cScales()}}});
-  document.getElementById('gml').innerHTML=[['Γ₋(l)','#ff9a3c'],['Γ₊(l)','#4a9eff'],['Γ=1','#3a3a42']].map(([lb,c])=>`<span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:${c};display:inline-block;"></span>${lb}</span>`).join('');
-}
-
-function uPk(){
-  const l=gL(),pD=[],pL=[];let pS=0;
-  for(let k=1;k<=10;k++){const p=pK(k,l);pD.push(+(p*100).toFixed(4));pL.push('k='+k);pS+=p;}
-  const ok=Math.abs(pS-1)<1e-9,km=pD.indexOf(Math.max(...pD))+1;
-  document.getElementById('kr').innerHTML=`
-    <div class="tr"><span class="tl">μ̄(l=${l})</span><span class="tv">${mu(l).toFixed(4)}</span></div>
-    <div class="tr"><span class="tl">ψ(l)</span><span class="tv">${ps(l).toFixed(4)}</span></div>
-    <div class="tr"><span class="tl">k le plus probable</span><span class="tv">k=${km} → ${pD[km-1].toFixed(3)}%</span></div>
-    <div class="tr"><span class="tl" style="font-weight:600;">Σ P(k)</span><span class="tv"><span class="${ok?'ok':'ko'}">${ok?'✓ = 1':'✗ '+pS.toFixed(8)}</span></span></div>`;
-  mk('cpk','pk',{type:'bar',data:{labels:pL,datasets:[{data:pD,backgroundColor:'#4a9eff',borderRadius:3}]},options:{...cOpts(),scales:{...cScales()}}});
-  const lv=[...Array(101).keys()];
-  mk('cmp','mp',{type:'line',data:{labels:lv,datasets:[
-    {data:lv.map(ll=>+mu(ll).toFixed(4)),borderColor:'#4a9eff',fill:false,pointRadius:0,tension:0.3,yAxisID:'ym'},
-    {data:lv.map(ll=>+ps(ll).toFixed(4)),borderColor:'#ff6b9d',fill:false,pointRadius:0,tension:0.3,yAxisID:'yp'},
-  ]},options:{...cOpts(),scales:{ym:{type:'linear',position:'left',min:0,max:10,ticks:{color:'#6a6865',font:{size:10}},grid:{color:'#1e1e22'}},yp:{type:'linear',position:'right',ticks:{color:'#6a6865',font:{size:10}},grid:{drawOnChartArea:false}},x:{ticks:{color:'#6a6865',font:{size:10}},grid:{color:'#1e1e22'}}}}});
-  document.getElementById('mpl').innerHTML=[['μ̄(l)','#4a9eff'],['ψ(l)','#ff6b9d']].map(([lb,c])=>`<span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:${c};display:inline-block;"></span>${lb}</span>`).join('');
-}
-
-function uB(){
-  const l=gL(),k=parseInt(document.getElementById('ks').value);
-  document.getElementById('kv').textContent=k;
-  let qiS=0,qjS=0;
-  for(let i=0;i<4;i++)qiS+=qi(i,l);
-  for(let j=0;j<5;j++)qjS+=qj(j,l);
-  const qt=qiS+qjS;
-  const pc0=pCarte(nz);
-  let normVal=null;
-  if(k<=3){normVal=normCheck(k,l,nz);}
-  document.getElementById('br').innerHTML=`
-    <div class="tr"><span class="tl">P(carte) état initial</span><span class="tv">${(pc0*100).toFixed(4)}%</span></div>
-    <div class="tr"><span class="tl">Σ q_i = 1−ρ(l)</span><span class="tv">${qiS.toFixed(8)}</span></div>
-    <div class="tr"><span class="tl">Σ q_j = ρ(l)</span><span class="tv">${qjS.toFixed(8)}</span></div>
-    <div class="tr"><span class="tl">Σ q_i + Σ q_j</span><span class="tv">${qt.toFixed(10)} <span class="${Math.abs(qt-1)<1e-9?'ok':'ko'}">${Math.abs(qt-1)<1e-9?'✓=1':'✗'}</span></span></div>
-    ${normVal!==null?`<div class="tr"><span class="tl" style="font-weight:600;">Σ séquences (k=${k})</span><span class="tv"><span class="${Math.abs(normVal-1)<0.001?'ok':'ko'}">${Math.abs(normVal-1)<0.001?'✓':'✗'} ${normVal.toFixed(8)}</span></span></div>`:`<div class="tr"><span class="tl">Σ séquences</span><span class="tv" style="color:var(--text3)">k&gt;3 : vérification par beam</span></div>`}`;
-  const qL=['i=1','i=2','i=3','i=4','j=1','j=2','j=3','j=4','j=5'];
-  const qD=[qi(0,l),qi(1,l),qi(2,l),qi(3,l),qj(0,l),qj(1,l),qj(2,l),qj(3,l),qj(4,l)];
-  mk('cq','q',{type:'bar',data:{labels:qL,datasets:[{data:qD.map(v=>+(v*100).toFixed(4)),backgroundColor:['#4a9eff','#4a9eff','#4a9eff','#4a9eff','#8b7fff','#8b7fff','#8b7fff','#8b7fff','#8b7fff'],borderRadius:3}]},options:{...cOpts(),scales:{...cScales()}}});
-  document.getElementById('ql').innerHTML=`<span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#4a9eff;display:inline-block;"></span>q_i pièces</span><span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:#8b7fff;display:inline-block;"></span>q_j points</span>`;
-  document.getElementById('qn').textContent=`ρ(l)=${rh(l).toFixed(4)}, exp.géom=(1−ρ)=${(1-rh(l)).toFixed(4)} — quand ρ↑, la suite géom. s'aplatit → grandes récompenses plus probables.`;
-  const seqs=topSequences(k,l,nz,20);
-  document.getElementById('tc').innerHTML=seqs.map((seq,idx)=>{
-    const labels=seq.seq.map(r=>rewLabel(r)).join('');
-    return`<div class="seq-item"><span class="seq-rank">#${idx+1}</span>${labels}<span class="seq-prob">${(seq.prob*100).toFixed(5)}%</span></div>`;
+  mk('c-statcout','sc',{type:'line',data:{labels:ns,datasets:[
+    {data:stats,borderColor:'#30d158',fill:false,pointRadius:0,tension:0.3,yAxisID:'ys'},
+    {data:coutsCumPt,borderColor:'#bf5af2',fill:false,pointRadius:0,tension:0.3,borderDash:[3,2],yAxisID:'yc'},
+    {data:coutsCumPc,borderColor:'#ffd60a',fill:false,pointRadius:0,tension:0.3,borderDash:[5,3],yAxisID:'yc'},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+    x:{ticks:{color:'#8e8e93',maxTicksLimit:12},grid:{color:'#1a1a1a'},title:{display:true,text:'n',color:'#555'}},
+    ys:{type:'linear',position:'left',ticks:{color:'#30d15888'},grid:{color:'#1a1a1a'},title:{display:true,text:'stat(n)',color:'#30d158'}},
+    yc:{type:'linear',position:'right',ticks:{color:'#bf5af288'},grid:{drawOnChartArea:false},title:{display:true,text:'coût cumulé',color:'#bf5af288'}},
+  }}});
+  document.getElementById('sc-leg').innerHTML=leg([['stat(n)','#30d158'],['coût cum. pts','#bf5af2'],['coût cum. pièces','#ffd60a']]);
+  mk('c-rend','rend',{type:'line',data:{labels:ns,datasets:[{data:rends,borderColor:'#D4537E',fill:true,backgroundColor:'rgba(212,83,126,0.07)',pointRadius:0,tension:0.3}]},options:scOpts('n','Δstat / coût_marg (×10³)')});
+  const r1=rendement(1,s1,mPt),r10=rendement(Math.min(10,nmax),s1,mPt);
+  const detach=EP.delta<0.5;
+  document.getElementById('rend-info').textContent=`δ=${EP.delta} ${detach?'< 0.5 ✓ détachement garanti':'≥ 0.5 ⚠ non garanti'} | stat(1)=${s1} | n=1:${(r1*1000).toFixed(3)}, n=10:${(r10*1000).toFixed(3)} (×10⁻³)`;
+  const tbody=document.getElementById('carte-tbody');
+  const keyNs=[1,2,3,5,10,20,30,50,75,100,150,200].filter(n=>n<=nmax);
+  tbody.innerHTML=keyNs.map(n=>{
+    let cpt=0,cpc=0;for(let k=1;k<=n;k++){cpt+=coutMargPts(k,mPt);cpc+=coutMargPc(k,mPc);}
+    const r=rendement(n,s1,mPt);const ds=statNscaled(n,s1)-statNscaled(n-1,s1);
+    return`<tr><td>${n}</td><td>${statNscaled(n,s1).toFixed(1)}</td><td>+${ds.toFixed(2)}</td>
+    <td>${coutMargPts(n,mPt).toFixed(1)}</td><td>${coutMargPc(n,mPc).toFixed(0)}</td>
+    <td style="color:#bf5af2;">${cpt.toFixed(1)}</td><td style="color:#ffd60a;">${cpc.toFixed(0)}</td>
+    <td style="color:${r>r1*0.1?'#30d158':'#ff453a'}">${(r*1000).toFixed(4)}</td></tr>`;
   }).join('');
 }
 
-function uSlot(){
-  const pc=pCarte(nz),pp=.75*(1-pc),po=.25*(1-pc),sum=pc+pp+po;
-  const ok=Math.abs(sum-1)<1e-9;
-  document.getElementById('sr').innerHTML=`
-    <div class="tr"><span class="tl">P(carte)</span><span class="tv">${(pc*100).toFixed(6)}%</span></div>
-    <div class="tr"><span class="tl">P(pièces) = 0.75·(1−P(c))</span><span class="tv">${(pp*100).toFixed(6)}%</span></div>
-    <div class="tr"><span class="tl">P(points) = 0.25·(1−P(c))</span><span class="tv">${(po*100).toFixed(6)}%</span></div>
-    <div class="tr"><span class="tl" style="font-weight:600;">Σ P(slot)</span><span class="tv">${sum.toFixed(10)} <span class="${ok?'ok':'ko'}">${ok?'✓=1':'✗'}</span></span></div>`;
-  document.getElementById('cd').innerHTML=R.map(z=>{
-    const p=nz[z]>0?wz[z]/nz[z]:0;
-    return`<div class="tr"><span class="tl <span class="${RCLS[z]}">${RL[z]}</span></span><span class="tv" style="color:var(--text3);font-size:11px;">w=${(wz[z]*100).toFixed(1)}% / ${nz[z]} rest. → ${(p*100).toFixed(5)}%</span></div>`;
-  }).join('')+`<div class="tr"><span class="tl" style="font-weight:600;">Total P(carte)</span><span class="tv" style="color:var(--blue)">${(pc*100).toFixed(5)}%</span></div>`;
-  mk('csl','sl',{type:'bar',data:{labels:['Carte','Pièces','Points'],datasets:[{data:[+(pc*100).toFixed(4),+(pp*100).toFixed(4),+(po*100).toFixed(4)],backgroundColor:['#34d68a','#4a9eff','#8b7fff'],borderRadius:4}]},options:{...cOpts(),scales:{...cScales(),y:{...cScales().y,max:100}}}});
+function uEcoCouts(){
+  const ntarget=Math.max(1,parseInt(document.getElementById('ec-ntarget').value)||10);
+  const rarNames=['Commune','Rare','Épique','Mythique','Légendaire','Spéciale'];
+  const colors=['#8e8e93','#7F77DD','#D4537E','#D85A30','#1D9E75','#BA7517'];
+  const ns=[...Array(ntarget).keys()].map(i=>i+1);
+  const datasets=RARITY_STAT1.map((s1,ri)=>{
+    const mPt=rarMultPt(ri);let cum=0;
+    return{label:rarNames[ri],data:ns.map(n=>{cum+=coutMargPts(n,mPt);return+cum.toFixed(1);}),borderColor:colors[ri],fill:false,pointRadius:0,tension:0.3};
+  });
+  mk('c-rarete','rar',{type:'line',data:{labels:ns,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8e8e93',maxTicksLimit:12},grid:{color:'#1a1a1a'},title:{display:true,text:'n',color:'#555'}},y:{ticks:{color:'#8e8e93'},grid:{color:'#1a1a1a'},title:{display:true,text:'Coût cumulé (pts)',color:'#555'}}}}});
+  document.getElementById('rar-leg').innerHTML=rarNames.map((n,i)=>`<span style="display:flex;align-items:center;gap:3px;"><span style="width:7px;height:7px;border-radius:2px;background:${colors[i]};display:inline-block;"></span>${n}</span>`).join('');
+  const baseR1=rendement(1,RARITY_STAT1[0],rarMultPt(0));
+  document.getElementById('rar-tbody').innerHTML=RARITY_STAT1.map((s1,ri)=>{
+    const mPt=rarMultPt(ri),mPc=rarMultPc(ri);
+    let cpt=0,cpc=0;for(let k=1;k<=ntarget;k++){cpt+=coutMargPts(k,mPt);cpc+=coutMargPc(k,mPc);}
+    const sn=statNscaled(ntarget,s1),rn=rendement(ntarget,s1,mPt);
+    const rentDiff=Math.abs(rn-rendement(ntarget,RARITY_STAT1[0],rarMultPt(0)));
+    const rentOk=rentDiff<0.0001;
+    return`<tr><td style="color:${colors[ri]};font-weight:500;">${rarNames[ri]}</td>
+    <td>${s1.toLocaleString()}</td><td>${sn.toLocaleString('fr-FR',{maximumFractionDigits:1})}</td>
+    <td>×${(sn/s1).toFixed(3)}</td>
+    <td style="color:#bf5af2;">${cpt.toFixed(1)}</td><td style="color:#ffd60a;">${cpc.toFixed(0)}</td>
+    <td>${(rn*1000).toFixed(4)}</td>
+    <td class="${rentOk?'ok':'ko'}">${rentOk?'✓ identique':'Δ'+rentDiff.toFixed(5)}</td></tr>`;
+  }).join('');
 }
 
-function uGlobal(){
-  const l=gL(),mn=Xn(l),mx=Xx(l);
-  let xi=parseInt(document.getElementById('xs').value)||mn;xi=Math.max(mn,Math.min(mx,xi));
-  const k=parseInt(document.getElementById('ks').value)||3;
-  const pxi=pXi(xi,l),pk=pK(k,l);
-  const pc=pCarte(nz),psl=pc+.75*(1-pc)+.25*(1-pc);
-  const slok=Math.abs(psl-1)<1e-9;
-  let pkS=0;for(let f=1;f<=10;f++)pkS+=pK(f,l);
-  const pxS=pXiS(l);
-  const seqs=topSequences(k,l,nz,1);
-  const ptop=seqs.length>0?seqs[0].prob:0;
-  const pG=pxi*pk*ptop;
-  document.getElementById('gc').innerHTML=[
-    `<div class="mc"><div class="ml">P(ξ=${xi})</div><div class="mv">${(pxi*100).toFixed(4)}%</div></div>`,
-    `<div class="mc"><div class="ml">P(k=${k})</div><div class="mv">${(pk*100).toFixed(4)}%</div></div>`,
-    `<div class="mc"><div class="ml">P(slot) initial</div><div class="mv">${psl.toFixed(8)}</div></div>`,
-    `<div class="mc"><div class="ml">P(séq. top 1)</div><div class="mv">${(ptop*100).toFixed(5)}%</div></div>`,
-    `<div class="mc"><div class="ml">P(coffre) — top 1</div><div class="mv">${pG.toExponential(3)}</div><div class="ms">P(ξ)·P(k)·P(seq₁)</div></div>`,
+// ── CHARTS UTILITAIRES ──
+function mk(id,key,cfg){if(CH[key])CH[key].destroy();const el=document.getElementById(id);if(!el)return;CH[key]=new Chart(el,cfg);}
+const scOpts=(xT,yT,ex={})=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8e8e93',maxTicksLimit:12},grid:{color:'#1a1a1a'},title:{display:!!xT,text:xT,color:'#555'},...(ex.x||{})},y:{ticks:{color:'#8e8e93'},grid:{color:'#1a1a1a'},title:{display:!!yT,text:yT,color:'#555'},...(ex.y||{})},...(ex.extra||{})}});
+const leg=items=>items.map(([lb,c])=>`<span style="display:flex;align-items:center;gap:3px;"><span style="width:7px;height:7px;border-radius:2px;background:${c};display:inline-block;"></span>${lb}</span>`).join('');
+
+// ── ONGLETS ANALYTIQUES ──
+function uDerived(){
+  const l=C.l,pc=pCnz(nz);
+  document.getElementById('dv').innerHTML=[
+    `<div class="mc"><div class="ml">l courant</div><div class="mv">${l}</div></div>`,
+    `<div class="mc"><div class="ml">Γ₋ / Γ₊</div><div class="mv">${Gm(l).toFixed(3)} / ${Gp(l).toFixed(3)}</div><div class="ms">${Gm(l)>Gp(l)?'petites XP':Gm(l)<Gp(l)?'grandes XP':'symétrique'}</div></div>`,
+    `<div class="mc"><div class="ml">XPmin / XPmax</div><div class="mv">${Xn(l)} / ${Xx(l)}</div></div>`,
+    `<div class="mc"><div class="ml">μ̄(l)</div><div class="mv">${mu(l).toFixed(3)}</div></div>`,
+    `<div class="mc"><div class="ml">ψ(l)</div><div class="mv">${ps(l).toFixed(4)}</div></div>`,
+    `<div class="mc"><div class="ml">ρ(l)</div><div class="mv">${rh(l).toFixed(4)}</div></div>`,
+    `<div class="mc"><div class="ml">P(carte)</div><div class="mv">${(pc*100).toFixed(3)}%</div></div>`,
+    `<div class="mc"><div class="ml">E[ξ|l]</div><div class="mv">${eXi(l).toFixed(1)}</div></div>`,
+    `<div class="mc"><div class="ml">k̄(l)</div><div class="mv">${kBar(l).toFixed(3)}</div></div>`,
+    `<div class="mc"><div class="ml">NG courant (sim)</div><div class="mv">${ngCourant()}</div><div class="ms">Prix: ${prixBoutiqueNG(ngCourant())} p/pt</div></div>`,
   ].join('');
-  document.getElementById('nc').innerHTML=`
-    <div class="tr"><span class="tl">Σ P(ξ) sur S_l</span><span class="tv"><span class="${Math.abs(pxS-1)<0.001?'ok':'ko'}">${Math.abs(pxS-1)<0.001?'✓':'✗'} ${pxS.toFixed(6)}</span></span></div>
-    <div class="tr"><span class="tl">Σ P(k) sur [1..10]</span><span class="tv"><span class="${Math.abs(pkS-1)<1e-9?'ok':'ko'}">${Math.abs(pkS-1)<1e-9?'✓':'✗'} ${pkS.toFixed(10)}</span></span></div>
-    <div class="tr"><span class="tl">P(slot) = 1</span><span class="tv"><span class="${slok?'ok':'ko'}">${slok?'✓':'✗'} ${psl.toFixed(10)}</span></span></div>`;
+}
+function uXi(){
+  const l=C.l,mn=Xn(l),mx=Xx(l);
+  let xi=Math.max(mn,Math.min(mx,Math.round(parseFloat(document.getElementById('xi_v').value)||mn)));
+  document.getElementById('xi_v').value=xi;
+  const p=pXi(xi,l),gm=Gm(l),gp=Gp(l);
+  document.getElementById('xr').innerHTML=`<div class="tr"><span>Γ₋</span><span>${gm.toFixed(5)}</span></div><div class="tr"><span>Γ₊</span><span>${gp.toFixed(5)}</span></div><div class="tr"><span>[${mn}..${mx}] → ${mx-mn+1} val.</span><span></span></div><div class="tr"><span style="font-weight:500;">P(ξ=${xi})</span><span>${(p*100).toFixed(5)}%</span></div>`;
+  document.getElementById('xn').textContent=gm>gp?'Γ₋>Γ₊ → petites XP favorisées':gm<gp?'Γ₊>Γ₋ → grandes XP favorisées':'symétrique';
+  const st=Math.max(1,Math.floor((mx-mn)/80)),xL=[],xD=[];
+  for(let y=mn;y<=mx;y+=st){xL.push(y);xD.push(+(pXi(y,l)*100).toFixed(5));}
+  mk('cxp','xp',{type:'line',data:{labels:xL,datasets:[{data:xD,borderColor:'#7F77DD',backgroundColor:'rgba(127,119,221,0.07)',fill:true,pointRadius:0,tension:0.3}]},options:scOpts('ξ','%')});
   const lv=[...Array(101).keys()];
-  mk('cr','rh',{type:'line',data:{labels:lv,datasets:[
-    {data:lv.map(ll=>+rh(ll).toFixed(4)),borderColor:'#ff6b9d',fill:false,pointRadius:0,tension:0.3},
-    {data:lv.map(ll=>+(1-rh(ll)).toFixed(4)),borderColor:'#4a9eff',fill:false,pointRadius:0,tension:0.3,borderDash:[4,2]},
-  ]},options:{...cOpts(),scales:{...cScales(),y:{...cScales().y,min:0,max:1}}}});
-  document.getElementById('rl').innerHTML=[['ρ(l) — points','#ff6b9d'],['1−ρ(l) — pièces','#4a9eff']].map(([lb,c])=>`<span style="display:flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:${c};display:inline-block;"></span>${lb}</span>`).join('');
+  mk('cgm','gm',{type:'line',data:{labels:lv,datasets:[{data:lv.map(ll=>+Gm(ll).toFixed(4)),borderColor:'#D85A30',fill:false,pointRadius:0,tension:0.3},{data:lv.map(ll=>+Gp(ll).toFixed(4)),borderColor:'#378ADD',fill:false,pointRadius:0,tension:0.3},{data:lv.map(()=>1),borderColor:'#444',borderDash:[4,3],pointRadius:0,fill:false}]},options:scOpts('l','Γ')});
+  document.getElementById('gml').innerHTML=leg([['Γ₋','#D85A30'],['Γ₊','#378ADD'],['Γ=1','#444']]);
+  const S=computeSL(),oData=[],oLabels=[];
+  for(let ll=0;ll<100;ll++){oLabels.push(ll);oData.push(+(S[ll+1]/S[ll]).toFixed(6));}
+  const oMoy=oData.reduce((a,b)=>a+b,0)/oData.length;
+  mk('col','ol',{type:'line',data:{labels:oLabels,datasets:[{data:oData,borderColor:'#5ac8fa',backgroundColor:'rgba(90,200,250,0.07)',fill:true,pointRadius:0,tension:0.3},{data:oLabels.map(()=>+oMoy.toFixed(6)),borderColor:'#ffd60a',borderDash:[5,3],pointRadius:0,fill:false}]},options:scOpts('l','o(l) = S(l+1)/S(l)')});
+  document.getElementById('oll').innerHTML=leg([['o(l)','#5ac8fa'],['moyenne','#ffd60a']]);
+  document.getElementById('oln').textContent=`o(l)=S(l+1)/S(l) | Min:${Math.min(...oData).toFixed(4)} (l=${oData.indexOf(Math.min(...oData))}) | Max:${Math.max(...oData).toFixed(4)} (l=${oData.indexOf(Math.max(...oData))}) | Moy:${oMoy.toFixed(4)}`;
+}
+function uPk(){
+  const l=C.l,pD=[],pL=[];let pS=0;
+  for(let k=1;k<=10;k++){const p=pK(k,l);pD.push(+(p*100).toFixed(4));pL.push('k='+k);pS+=p;}
+  const ok=Math.abs(pS-1)<1e-9,km=pD.indexOf(Math.max(...pD))+1;
+  document.getElementById('kr').innerHTML=`<div class="tr"><span>μ̄(l=${l})</span><span>${mu(l).toFixed(4)}</span></div><div class="tr"><span>ψ(l)</span><span>${ps(l).toFixed(4)}</span></div><div class="tr"><span>k̄(l)</span><span>${kBar(l).toFixed(4)}</span></div><div class="tr"><span>k modal</span><span>k=${km} → ${pD[km-1].toFixed(3)}%</span></div><div class="tr"><span>Σ P(k)</span><span><span class="${ok?'ok':'ko'}">${ok?'✓=1':'✗ '+pS.toFixed(8)}</span></span></div>`;
+  mk('cpk','pk',{type:'bar',data:{labels:pL,datasets:[{data:pD,backgroundColor:'#378ADD',borderRadius:3}]},options:scOpts('','%')});
+  const lv=[...Array(101).keys()];
+  mk('cmp','mp',{type:'line',data:{labels:lv,datasets:[{data:lv.map(ll=>+mu(ll).toFixed(4)),borderColor:'#378ADD',fill:false,pointRadius:0,tension:0.3,yAxisID:'ym'},{data:lv.map(ll=>+ps(ll).toFixed(4)),borderColor:'#D4537E',fill:false,pointRadius:0,tension:0.3,yAxisID:'yp'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{ym:{type:'linear',position:'left',min:0,max:10,ticks:{color:'#8e8e93'},grid:{color:'#1a1a1a'},title:{display:true,text:'μ̄',color:'#555'}},yp:{type:'linear',position:'right',ticks:{color:'#8e8e93'},grid:{drawOnChartArea:false},title:{display:true,text:'ψ',color:'#555'}},x:{ticks:{color:'#8e8e93'},grid:{color:'#1a1a1a'},title:{display:true,text:'l',color:'#555'}}}}});
+  document.getElementById('mpl').innerHTML=leg([['μ̄(l)','#378ADD'],['ψ(l)','#D4537E']]);
+}
+function normCheck(k,l){let tot=0;const nzs={...nz};function go(s,p){if(s>k){tot+=p;return;}const pc=pCnz(nzs),pp=0.75*(1-pc),po=0.25*(1-pc);for(const z of R){if(nzs[z]>0){const pr=wz[z]/nzs[z];nzs[z]--;go(s+1,p*pr);nzs[z]++;}}for(let i=0;i<4;i++)go(s+1,p*qi(i,l)*pp);for(let j=0;j<5;j++)go(s+1,p*qj(j,l)*po);}go(1,1);return tot;}
+function enumSeqs(k,l,maxTop){const tops=[];const nzs={...nz};function go(s,p,seq){if(s>k){tops.push({seq:[...seq],p});return;}const pc=pCnz(nzs),pp=0.75*(1-pc),po=0.25*(1-pc);for(const z of R){if(nzs[z]>0){const pr=wz[z]/nzs[z];nzs[z]--;seq.push({type:'carte',z});go(s+1,p*pr,seq);seq.pop();nzs[z]++;}}for(let i=0;i<4;i++){seq.push({type:'piece',i});go(s+1,p*qi(i,l)*pp,seq);seq.pop();}for(let j=0;j<5;j++){seq.push({type:'point',j});go(s+1,p*qj(j,l)*po,seq);seq.pop();}}go(1,1,[]);tops.sort((a,b)=>b.p-a.p);return tops.slice(0,maxTop);}
+const seqLbl=seq=>{const pL=['25p','50p','100p','200p'],ptL=['1pt','2pt','3pt','4pt','5pt'];return seq.map(c=>c.type==='carte'?`${RL[c.z]}`:c.type==='piece'?pL[c.i]:ptL[c.j]).join('→');};
+function uB(){
+  const l=C.l,k=Math.max(1,Math.min(6,parseInt(document.getElementById('p_kb').value)||3));
+  document.getElementById('p_kb').value=k;
+  const tops=enumSeqs(k,l,20);let qiS=0,qjS=0;for(let i=0;i<4;i++)qiS+=qi(i,l);for(let j=0;j<5;j++)qjS+=qj(j,l);
+  const qt=qiS+qjS,norm=k<=3?normCheck(k,l):null;
+  document.getElementById('br').innerHTML=`<div class="tr"><span>Σ q_i+Σ q_j</span><span>${qt.toFixed(10)} <span class="${Math.abs(qt-1)<1e-9?'ok':'ko'}">${Math.abs(qt-1)<1e-9?'✓=1':'✗'}</span></span></div><div class="tr"><span>Σ séquences</span><span>${norm!==null?`${norm.toFixed(8)} <span class="${Math.abs(norm-1)<0.001?'ok':'ko'}">${Math.abs(norm-1)<0.001?'✓≈1':'✗'}</span>`:'k>3'}</span></div>`;
+  mk('cq','q',{type:'bar',data:{labels:['i=1','i=2','i=3','i=4','j=1','j=2','j=3','j=4','j=5'],datasets:[{data:[0,1,2,3].map(i=>+(qi(i,l)*100).toFixed(4)).concat([0,1,2,3,4].map(j=>+(qj(j,l)*100).toFixed(4))),backgroundColor:['#378ADD','#378ADD','#378ADD','#378ADD','#7F77DD','#7F77DD','#7F77DD','#7F77DD','#7F77DD'],borderRadius:3}]},options:scOpts('','%')});
+  document.getElementById('ql').innerHTML=leg([['q_i pièces','#378ADD'],['q_j points','#7F77DD']]);
+  document.getElementById('qn').textContent=`ρ(l)=${rh(l).toFixed(4)}`;
+  document.getElementById('tc').innerHTML=tops.map((t,i)=>`<div class="tr"><span style="color:#555;min-width:20px;">#${i+1}</span><span style="flex:1;margin:0 5px;font-size:10px;">${seqLbl(t.seq)}</span><span>${(t.p*100).toFixed(5)}%</span></div>`).join('');
+}
+function uSlot(){
+  const pc=pCnz(nz),pp=.75*(1-pc),po=.25*(1-pc),sum=pc+pp+po;
+  document.getElementById('sr').innerHTML=`<div class="tr"><span>P(carte)</span><span>${(pc*100).toFixed(6)}%</span></div><div class="tr"><span>P(pièces)</span><span>${(pp*100).toFixed(6)}%</span></div><div class="tr"><span>P(points)</span><span>${(po*100).toFixed(6)}%</span></div><div class="tr"><span>Σ</span><span>${sum.toFixed(10)} <span class="${Math.abs(sum-1)<1e-9?'ok':'ko'}">${Math.abs(sum-1)<1e-9?'✓=1':'✗'}</span></span></div>`;
+  document.getElementById('cd').innerHTML=R.map(z=>{const p=nz[z]>0?wz[z]/nz[z]:0;return`<div class="tr"><span style="color:${RC[z]};">${RL[z]}</span><span style="color:#555;font-size:10px;">w=${(wz[z]*100).toFixed(1)}%/${nz[z]}</span><span>${(p*100).toFixed(5)}%</span></div>`;}).join('')+`<div class="tr" style="font-weight:500;"><span>Total P(carte)</span><span></span><span>${(pc*100).toFixed(5)}%</span></div>`;
+  mk('csl','sl',{type:'bar',data:{labels:['Carte','Pièces','Points'],datasets:[{data:[+(pc*100).toFixed(4),+(pp*100).toFixed(4),+(po*100).toFixed(4)],backgroundColor:['#1D9E75','#378ADD','#7F77DD'],borderRadius:4}]},options:scOpts('','%',{y:{max:100}})});
+}
+function uGlobal(){
+  const l=C.l,mn=Xn(l),mx=Xx(l);
+  let xi=Math.max(mn,Math.min(mx,Math.round(parseFloat(document.getElementById('xi_v').value)||mn)));
+  const k=Math.max(1,Math.min(6,parseInt(document.getElementById('p_kb').value)||3));
+  const pxi=pXi(xi,l),pk=pK(k,l),tops=enumSeqs(k,l,1),bestP=tops.length>0?tops[0].p:0;
+  let pkS=0;for(let f=1;f<=10;f++)pkS+=pK(f,l);
+  document.getElementById('gc').innerHTML=[`<div class="mc"><div class="ml">P(ξ=${xi})</div><div class="mv">${(pxi*100).toFixed(4)}%</div></div>`,`<div class="mc"><div class="ml">P(k=${k})</div><div class="mv">${(pk*100).toFixed(4)}%</div></div>`,`<div class="mc"><div class="ml">P(séq. #1)</div><div class="mv">${(bestP*100).toFixed(5)}%</div></div>`,`<div class="mc"><div class="ml">P(coffre) #1</div><div class="mv">${(pxi*pk*bestP).toExponential(3)}</div></div>`,`<div class="mc"><div class="ml">E[ξ|l]</div><div class="mv">${eXi(l).toFixed(1)}</div></div>`,`<div class="mc"><div class="ml">k̄(l)</div><div class="mv">${kBar(l).toFixed(3)}</div></div>`].join('');
+  const pxS=pXiSum(l);
+  document.getElementById('nc').innerHTML=`<div class="tr"><span>Σ P(ξ)</span><span><span class="${Math.abs(pxS-1)<0.001?'ok':'ko'}">${pxS.toFixed(6)}</span></span></div><div class="tr"><span>Σ P(k)</span><span><span class="${Math.abs(pkS-1)<1e-9?'ok':'ko'}">${pkS.toFixed(10)}</span></span></div>`;
+  const lv=[...Array(101).keys()];
+  mk('cr','rh',{type:'line',data:{labels:lv,datasets:[{data:lv.map(ll=>+rh(ll).toFixed(4)),borderColor:'#D4537E',fill:false,pointRadius:0,tension:0.3},{data:lv.map(ll=>+(1-rh(ll)).toFixed(4)),borderColor:'#378ADD',fill:false,pointRadius:0,tension:0.3,borderDash:[4,2]}]},options:scOpts('l','valeur',{y:{min:0,max:1}})});
+  document.getElementById('rl').innerHTML=leg([['ρ(l)','#D4537E'],['1−ρ(l)','#378ADD']]);
+}
+function uSL(){
+  const S=computeSL(),lv=[...Array(101).keys()];
+  const eMoy=lv.map(l=>eXi(l)),cMoy=lv.map(l=>S[l]/eMoy[l]),cMin=lv.map(l=>Math.ceil(S[l]/Xx(l))),cMax=lv.map(l=>Math.ceil(S[l]/Xn(l)));
+  mk('cslc','slc',{type:'line',data:{labels:lv,datasets:[{data:cMax,borderColor:'#ff453a',fill:'+1',backgroundColor:'rgba(255,69,58,0.05)',pointRadius:0,tension:0.3},{data:cMoy.map(v=>+v.toFixed(2)),borderColor:'#ffd60a',fill:false,pointRadius:0,tension:0.3,borderWidth:2},{data:cMin,borderColor:'#30d158',fill:'-1',backgroundColor:'rgba(48,209,88,0.05)',pointRadius:0,tension:0.3}]},options:scOpts('l','Coffres nécessaires')});
+  document.getElementById('slleg').innerHTML=leg([['Pire','#ff453a'],['Moyen','#ffd60a'],['Meilleur','#30d158']]);
+  let tS=0,tCmin=0,tCmax=0,tPmax=0,tPtmax=0,tEp=0,tEpt=0;
+  document.getElementById('sltb').innerHTML=lv.map(l=>{
+    const s=S[l],cmin=cMin[l],cmax=cMax[l],pmx=10*200*cmin,ptmx=10*5*cmin,ep=ePieces(l)*cMoy[l],ept=ePoints(l)*cMoy[l];
+    tS+=s;tCmin+=cmin;tCmax+=cmax;tPmax+=pmx;tPtmax+=ptmx;tEp+=ep;tEpt+=ept;
+    return`<tr><td>l=${l}</td><td>${Math.round(s).toLocaleString()}</td><td>${Xn(l)}</td><td>${Xx(l)}</td><td>${cmin}</td><td>${cmax}</td><td>${pmx.toLocaleString()}</td><td>${ptmx}</td><td>${ep.toFixed(0)}</td><td>${ept.toFixed(2)}</td></tr>`;
+  }).join('');
+  document.getElementById('tf_s').textContent=Math.round(tS).toLocaleString();
+  document.getElementById('tf_cmin').textContent=tCmin;document.getElementById('tf_cmax').textContent=tCmax;
+  document.getElementById('tf_pmax').textContent=tPmax.toLocaleString();document.getElementById('tf_ptmax').textContent=tPtmax;
+  document.getElementById('tf_ep').textContent=tEp.toFixed(0);document.getElementById('tf_ept').textContent=tEpt.toFixed(2);
 }
 
-function bRar(){
-  document.getElementById('rg').innerHTML=R.map(z=>`
-    <div>
-      <div style="font-size:11px;margin-bottom:3px;" class="${RCLS[z]}">${RL[z]} <span style="color:var(--text3);">/${nzt[z]}</span></div>
-      <input type="number" min="0" max="${nzt[z]}" value="${nz[z]}" id="nz_${z}" style="width:100%;" oninput="oNz()">
-    </div>`).join('');
+// ── PARAMS ──
+function readParams(){
+  C.g=parseFloat(document.getElementById('p_g').value)||.028;
+  C.l0=parseInt(document.getElementById('p_l0').value)||35;
+  C.lm=parseFloat(document.getElementById('p_lm').value)||.030;
+  C.p0=parseFloat(document.getElementById('p_p0').value)||3.2;
+  C.pi=parseFloat(document.getElementById('p_pi').value)||1.4;
+  C.kp=parseFloat(document.getElementById('p_kp').value)||.008;
+  C.rn=parseFloat(document.getElementById('p_rn').value)||.15;
+  C.rx=parseFloat(document.getElementById('p_rx').value)||.50;
+  C.eta=parseFloat(document.getElementById('p_eta').value)||.035;
+  C.l=Math.max(0,Math.min(100,parseInt(document.getElementById('p_l').value)||0));
+  R.forEach(z=>{let v=parseInt(document.getElementById('nz_'+z).value);if(isNaN(v)||v<0)v=0;if(v>nzt[z])v=nzt[z];nz[z]=v;});
+  SLP.s0=parseInt(document.getElementById('p_s0').value)||80;
+  SLP.s1=Math.max(SLP.s0+1,parseInt(document.getElementById('p_s1').value)||120);
+  SLP.r0=parseFloat(document.getElementById('p_r0').value)||.06;
+  SLP.ri=parseFloat(document.getElementById('p_ri').value)||.58;
+  SLP.tau=parseFloat(document.getElementById('p_tau').value)||.016;
+  EP.alpha=parseFloat(document.getElementById('e_alpha').value)||1.35;
+  EP.delta=Math.min(0.49,parseFloat(document.getElementById('e_delta').value)||.40);
+  EP.beta=parseFloat(document.getElementById('e_beta').value)||.18;
+  EP.cp=parseFloat(document.getElementById('e_cp').value)||8;
+  EP.cc=parseFloat(document.getElementById('e_cc').value)||320;
+  EP.fr=parseFloat(document.getElementById('e_fr').value)||1.20;
+  document.getElementById('e_delta').value=EP.delta;
 }
-function oNz(){R.forEach(z=>{let v=parseInt(document.getElementById('nz_'+z).value);if(isNaN(v)||v<0)v=0;if(v>nzt[z])v=nzt[z];nz[z]=v;});u();}
-function aOv(){C.g=parseFloat(document.getElementById('og').value)||.022;C.eta=parseFloat(document.getElementById('oe').value)||.025;C.rn=parseFloat(document.getElementById('orn').value)||.35;C.rx=parseFloat(document.getElementById('orx').value)||.65;C.p0=parseFloat(document.getElementById('op0').value)||2.5;C.pi=parseFloat(document.getElementById('opi').value)||.8;u();}
-function rOv(){C={g:.022,eta:.025,rn:.35,rx:.65,p0:2.5,pi:.8,kp:.01};['og','oe','orn','orx','op0','opi'].forEach((id,i)=>{document.getElementById(id).value=[.022,.025,.35,.65,2.5,.8][i];});u();}
-function oF(){l0=parseInt(document.getElementById('l0s').value);document.getElementById('l0v').textContent=l0;lm=parseInt(document.getElementById('lms').value)/1000;document.getElementById('lmv').textContent=lm.toFixed(3);u();}
-function onL(){document.getElementById('lv').textContent=document.getElementById('sl').value;u();}
+function setDefaults(vals){Object.entries(vals).forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.value=v;});}
+function resetAll(){setDefaults({p_g:.028,p_l0:35,p_lm:.030,p_p0:3.2,p_pi:1.4,p_kp:.008,p_rn:.15,p_rx:.50,p_eta:.035,p_l:0,p_s0:80,p_s1:120,p_r0:.06,p_ri:.58,p_tau:.016,e_alpha:1.35,e_delta:.40,e_beta:.18,e_cp:8,e_cc:320,e_fr:1.20});R.forEach(z=>document.getElementById('nz_'+z).value=nzt[z]);applyAll();}
+function resetV7(){setDefaults({p_g:.022,p_l0:50,p_lm:.020,p_p0:2.5,p_pi:.8,p_kp:.01,p_rn:.35,p_rx:.65,p_eta:.025,p_l:0,p_s0:50,p_s1:80,p_r0:.10,p_ri:.50,p_tau:.030});R.forEach(z=>document.getElementById('nz_'+z).value=nzt[z]);applyAll();}
 
+// ── ROUTING ONGLETS ──
+const ALL_TABS=['p','f','sim','eco','bout','hi','xi','k','b','s','g','sl'];
 let at='p';
 function T(t){
   at=t;
-  ['p','xi','k','b','s','g'].forEach(id=>{document.getElementById('t'+id).style.display=id===t?'block':'none';});
-  document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('on',['p','xi','k','b','s','g'][i]===t);});
-  u();
+  ALL_TABS.forEach(id=>{const el=document.getElementById('t'+id);if(el)el.style.display=id===t?'block':'none';});
+  document.querySelectorAll('#main-tabs .tab').forEach((el,i)=>{el.classList.toggle('on',ALL_TABS[i]===t);});
+  renderTab();
 }
-function u(){
+function ST(t){document.getElementById('sp-manuel').style.display=t==='manuel'?'':'none';document.getElementById('sp-auto').style.display=t==='auto'?'':'none';document.getElementById('stab-manuel').classList.toggle('on',t==='manuel');document.getElementById('stab-auto').classList.toggle('on',t==='auto');}
+function renderTab(){
   uDerived();
-  if(at==='xi')uXi();
+  if(at==='sim'){renderSimStats();renderSimTable();}
+  else if(at==='eco'){if(ecoTab==='cours')uEcoCours();else if(ecoTab==='carte')uEcoCarte();else uEcoCouts();}
+  else if(at==='bout')renderBoutique();
+  else if(at==='hi')renderHistorique();
+  else if(at==='xi')uXi();
   else if(at==='k')uPk();
   else if(at==='b')uB();
   else if(at==='s')uSlot();
   else if(at==='g')uGlobal();
+  else if(at==='sl')uSL();
 }
-bRar();u();
-document.getElementById('sl').addEventListener('input',onL);
-document.getElementById('l0s').addEventListener('input',oF);
-document.getElementById('lms').addEventListener('input',oF);
+function applyAll(){readParams();renderTab();}
+
+// Init
+boutInitJour();
+applyAll();
+simReset();
 </script>
 </body>
 </html>
